@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>قائمة مطاعم ومطابخ سحايب ديرتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="/Dirty55/manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <button id="installAppBtn">تثبيت التطبيق 📲</button>
+  <div><img src="/Dirty55/logo-bg.png" alt="شعار المطعم" onerror="this.style.opacity=0.25; this.style.height='50px'"></div>
+</header>
+
+<input type="search" id="searchBar" placeholder="ابحث عن وجبة سريعة أو صنف..." aria-label="البحث في القائمة">
+
+<div id="sections" aria-hidden="false"></div>
+<main id="menuList" role="list"></main>
+
+<div id="cartOverlay"></div>
+<div id="cartDrawer" aria-hidden="true">
+  <div class="cart-header">
+    <div>سلة الطلبات</div>
+    <button id="closeCartBtn" title="إغلاق">✖</button>
+  </div>
+  <div id="cartItems"></div>
+  <div class="delivery-options-container">
+    <label class="delivery-option">
+      <input type="radio" name="deliveryType" value="pickup" checked>
+      <span>استلام</span>
+    </label>
+    <label class="delivery-option">
+      <input type="radio" name="deliveryType" value="delivery">
+      <span>
+        توصيل
+        <span class="cost">5 ريال</span> 
+      </span>
+    </label>
+  </div>
+
+  <div class="cart-footer">
+    <div id="totalBreakdown">
+      </div>
+    <div style="display:flex;gap:8px;">
+      <button id="sendWhatsapp" class="primary-btn" style="flex:1;">إرسال عبر واتساب</button>
+      <button id="clearCart" class="danger-btn" style="width:120px;">مسح السلة</button>
+    </div>
+  </div>
+</div>
+
+<button id="cartBtn" aria-label="عرض السلة">🛒 <span id="cartCount" style="display:none"></span></button>
+
+<div id="optionModal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <div id="modalOptions"></div>
+    
+    <textarea id="itemNote" placeholder="ملاحظات خاصة على هذا الصنف (مثل: بدون ملح، فلفل خفيف)..." rows="3"></textarea>
+    
+    <button id="modalConfirm" class="primary-btn">تأكيد</button>
+  </div>
+</div>
+
+<script src="script.js?v=1.0" defer></script>
+
+</body>
+</html>
