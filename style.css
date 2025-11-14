@@ -1,0 +1,224 @@
+/* ====== متغيرات الوضع الداكن الجديد ====== */
+:root{
+  --gold:#d3a15e; /* ذهبي (لون ثابت للعناصر الهامة) */
+  --deep-brown-bg:#1A1512; /* خلفية داكنة جداً للجسم الرئيسي والهيدر */
+  --card-bg-dark:#2B231D; /* لون بطاقة داكن للحفاظ على التباين */
+  --light-text:#F5E7C5; /* نص فاتح يميل للبيج (للقراءة على الخلفيات الداكنة) */
+  --red:#ef4444;
+  --old-brown: #2b1a10; /* اللون البني الداكن القديم، يستخدم لتباين النصوص على الذهبي */
+}
+
+body{
+  font-family:'Cairo',sans-serif;
+  margin:0;
+  /* تطبيق الخلفية الداكنة والنص الفاتح */
+  background:var(--deep-brown-bg); 
+  color:var(--light-text); 
+  padding-top: 92px;
+}
+
+/* ====== تعديل رأس الصفحة (Header) إلى اللون الداكن ====== */
+header{
+  background:var(--deep-brown-bg); /* خلفية داكنة */
+  color:var(--light-text); /* نص فاتح */
+  padding:16px;
+  text-align:center;
+  font-size:1.4rem;
+  font-weight:700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0; 
+  width: 100%; 
+  z-index: 20; 
+  box-sizing: border-box; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5); /* إضافة ظل بسيط */
+}
+header img {height:60px;}
+header div {text-align: center; flex-grow: 1;}
+
+#installAppBtn {
+  background: var(--gold);
+  color: var(--old-brown);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  transition: background .2s;
+}
+#installAppBtn:hover {background: #4a2f1c;}
+
+/* تنسيق حقل البحث (Sticky) - أصبح داكناً */
+#searchBar {
+  width: 95%; 
+  padding: 10px 15px;
+  margin: 10px auto; 
+  display: block;
+  border: 2px solid var(--gold);
+  border-radius: 25px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-sizing: border-box; 
+  position: sticky;
+  top: 80px;
+  z-index: 10;
+  background: var(--card-bg-dark);
+  color: var(--light-text);
+}
+
+/* تنسيق الأقسام الجديدة (Sticky) - أصبح داكناً */
+#sections {
+  display: flex; 
+  gap: 10px;
+  padding: 14px 12px; 
+  overflow-x: auto; 
+  flex-wrap: nowrap; 
+  background: var(--deep-brown-bg); 
+  border-bottom: 1px solid rgba(255,255,255,0.08); /* حدود فاتحة */
+  position: sticky;
+  top: 155px;
+  z-index: 10;
+  background: var(--deep-brown-bg); 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* تنسيق بطاقة القسم (sec-card) - أصبح داكناً */
+.sec-card {
+  min-width: 100px;
+  max-width: 120px;
+  background: var(--card-bg-dark);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* ظل داكن */
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  text-align: center;
+  border: 2px solid transparent; 
+  opacity: 0.95;
+}
+
+.sec-card.active {
+  border-color: var(--gold); 
+  box-shadow: 0 0 0 3px var(--gold);
+  opacity: 1;
+}
+.sec-card img {
+  width: 100%;
+  height: 70px; 
+  object-fit: cover;
+  display: block;
+}
+.sec-card .sec-name {
+  padding: 6px 4px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--light-text); /* نص فاتح */
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* تنسيق بطاقة الوجبة (card) - أصبح داكناً */
+#menuList{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.card{
+  background:var(--card-bg-dark);
+  backdrop-filter:blur(4px);
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  transition:transform .15s, box-shadow .2s;
+}
+
+.card h3{margin:0;font-size:1rem;color:var(--light-text);font-weight:700;}
+.card p{margin:2px 0 0;color:rgba(255,255,255,0.7);font-size:0.9rem;} /* وصف فاتح باهت */
+.card .price{font-size:1.2rem;font-weight:800;color:var(--gold);} /* السعر بالذهبي */
+.add-btn{background:var(--gold);color:var(--old-brown);border:none;padding:8px 12px;border-radius:8px;font-weight:800;cursor:pointer;}
+
+/* Cart drawer - أصبح داكناً */
+#cartDrawer{
+  position:fixed;right:0;top:0;height:100%;width:360px;
+  background:var(--card-bg-dark);
+  box-shadow:-8px 0 24px rgba(0,0,0,0.4);
+  transform:translateX(110%);transition:transform .25s;z-index:80;display:flex;flex-direction:column;}
+
+/* ====== تصحيح فتح السلة ====== */
+#cartDrawer.open {
+  transform: translateX(0%); /* هذا يعيد السلة إلى موقعها الطبيعي (0%) */
+}
+
+#cartOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;z-index:70;}
+.cart-header{
+  padding:14px;
+  border-bottom:1px solid rgba(255,255,255,0.08); /* حد فاتح */
+  display:flex;justify-content:space-between;align-items:center;font-weight:800;}
+#cartItems{padding:12px;overflow:auto;flex:1;}
+.cart-row{
+  display:flex;justify-content:space-between;align-items:center;padding:8px;
+  background:var(--deep-brown-bg); /* لون خلفية أعمق للصفوف */
+  border-radius:8px;margin-bottom:8px;
+}
+.cart-row .controls{display:flex;gap:6px;align-items:center;}
+.cart-footer{
+  padding:12px;
+  border-top:1px solid rgba(255,255,255,0.08); /* حد فاتح */
+  display:flex;flex-direction:column;gap:8px;
+}
+.primary-btn{background:var(--gold);color:var(--old-brown);border:none;padding:10px;border-radius:8px;font-weight:800;cursor:pointer;}
+.danger-btn{background:var(--red);color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer;}
+
+/* زر السلة (Cart Btn) */
+#cartBtn{
+  position:fixed;
+  bottom:18px;
+  right:18px;
+  background:var(--gold);
+  color:var(--old-brown);
+  padding:14px;
+  border-radius:999px;
+  border:none;
+  font-weight:800;
+  z-index:90;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  cursor:pointer;
+}
+
+/* تأثير الوميض لزر السلة */
+@keyframes cartFlash {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  }
+  50% { 
+    transform: scale(1.1);
+    box-shadow: 0 0 20px 5px rgba(211, 161, 94, 0.9);
+  } 
+}
+.flash-cart-btn {
+  animation: cartFlash 0.4s ease-in-out;
+}
+
+/* pop-up modal - أصبح داكناً */
+#optionModal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;}
+#optionModal .modal-content{background:var(--card-bg-dark);padding:20px;border-radius:12px;max-width:320px;width:100%;}
+#optionModal h3{margin-top:0; color: var(--light-text);}
+#optionModal .opt-btn{display:block;width:100%;padding:10px;margin:6px 0;background:var(--gold);color:var(--old-brown);border:none;border-radius:8px;font-weight:700;cursor:pointer;text-align:right;}
+.delivery-option input[type="radio"]:checked + span{
+  background:var(--gold);
+  border-color:var(--old-brown);
+  color:var(--old-brown);
+}
+/* تنسيقات أخرى بسيطة (غيرت الألوان الداكنة لتتناسب مع الخلفية الداكنة) */
+.delivery-option span{border:2px solid #555;background:var(--deep-brown-bg);} 
+.delivery-option input[type="radio"]:checked + span{border-color:var(--gold);} 
