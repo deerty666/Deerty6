@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deerty6 - لوحة التحكم المالية</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json"> 
+</head>
+<body>
+
+    <div class="container">
+        <h1>إدارة ديون العملاء 💰</h1>
+        <div class="controls">
+            <button id="add-debt-btn" class="primary-btn">إضافة دين جديد ➕</button>
+            <button id="record-payment-btn" class="secondary-btn">تسجيل دفعة 🟢</button>
+        </div>
+        <div class="summary-card">
+            <p>إجمالي الرصيد المستحق: <span id="total-balance">0.00</span> ريال</p>
+        </div>
+        <table id="clients-table">
+            <thead>
+                <tr>
+                    <th>العميل</th>
+                    <th>الرصيد المتبقي</th>
+                    <th>منذ آخر دفع</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="app-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
