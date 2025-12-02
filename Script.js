@@ -635,7 +635,7 @@ if(getLocationBtn) getLocationBtn.addEventListener('click', getMyLocation);
 /* ====== Service Worker registration (kept) ====== */
 if('serviceWorker' in navigator){
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/Dirty55/service-worker.js').then(reg => {
+        navigator.serviceWorker.register('/Deerty6/service-worker.js').then(reg => {
             console.log('Service Worker Registered!', reg.scope);
         }).catch(err => console.error('Service Worker Registration failed:', err));
     });
