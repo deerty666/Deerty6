@@ -101,7 +101,7 @@ function processMenuData(data) {
     if (bestSellers.length > 0) {
         let bestSellerSection = {
             section: "الأكثر مبيعاً 🏆",
-            sectionImg: "/Dirty55/best_seller_icon.webp",
+            sectionImg: "/Dirty6/best_seller_icon.webp",
             items: bestSellers,
             sectionAvailableIn: ['branch1']
         };
