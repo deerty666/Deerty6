@@ -24,55 +24,55 @@ document.title = `قائمة سحايب ديرتي - فرع ${currentBranch.name
 
 /* ====== بيانات المنيو (مختصرة على branch1) ====== */
 const menuData = [
-    { section:"الكل", sectionImg: "Dirty55/logo-bg.webp", items:[] },
-    { section:"الشوايه", sectionImg: "Dirty55/sh00.webp", items:[
-        {id:"sh1", img:"Dirty55/sh00.webp", name:"حبة شواية", basePrice:46, availableIn:['branch1'], options:[
+    { section:"الكل", sectionImg: "Deerty6/logo-bg.webp", items:[] },
+    { section:"الشوايه", sectionImg: "Deerty6/sh00.webp", items:[
+        {id:"sh1", img:"Deerty6/sh00.webp", name:"حبة شواية", basePrice:46, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:4},{name:"رز مندي", price:4},{name:"رز مثلوثه", price:4}
         ]},
-        {id:"sh2", img:"Dirty55/sh00.webp", name:"نص شواية بالرز", basePrice:24, availableIn:['branch1'], options:[
+        {id:"sh2", img:"Deerty6/sh00.webp", name:"نص شواية بالرز", basePrice:24, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:1},{name:"رز مندي", price:1},{name:"رز مثلوثه", price:1}
         ]},
-        {id:"sh3", img:"Dirty55/sh10.webp", name:"ربع دجاج", basePrice:13, isBestSeller:true, availableIn:['branch1'], options:[
+        {id:"sh3", img:"Deerty6/sh10.webp", name:"ربع دجاج", basePrice:13, isBestSeller:true, availableIn:['branch1'], options:[
             {name:"شوايه", price:0},{name:"مندي", price:0}
         ]},
-        {id:"sh4", img:"Dirty55/sh20.webp", name:"نصف دجاج (ساده)", basePrice:15, isBestSeller:true, availableIn:['branch1'], options:[
+        {id:"sh4", img:"Deerty6/sh20.webp", name:"نصف دجاج (ساده)", basePrice:15, isBestSeller:true, availableIn:['branch1'], options:[
             {name:"شوايه", price:0},{name:"مظبي", price:0},{name:"مندي", price:0}
         ]}
     ]},
-    { section:"المظبي", sectionImg: "Dirty55/md00.webp", items:[
-        {id:"md1", img:"Dirty55/md00.webp", name:"حبة مظبي", basePrice:46, availableIn:['branch1'], options:[
+    { section:"المظبي", sectionImg: "Deerty6/md00.webp", items:[
+        {id:"md1", img:"Deerty6/md00.webp", name:"حبة مظبي", basePrice:46, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:4},{name:"رز مندي", price:4},{name:"رز مثلوثه", price:4}
         ]},
-        {id:"md2", img:"Dirty55/md00.webp", name:"نص مظبي", basePrice:24, availableIn:['branch1'], options:[
+        {id:"md2", img:"Deerty6/md00.webp", name:"نص مظبي", basePrice:24, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:1},{name:"رز مندي", price:1},{name:"رز مثلوثه", price:1}
         ]}
     ]},
-    { section:"مندي", sectionImg: "Dirty55/mn00.webp", items:[
-        {id:"mn1", img:"Dirty55/mn00.webp", name:"حبة مندي", basePrice:46, availableIn:['branch1'], options:[
+    { section:"مندي", sectionImg: "Deerty6/mn00.webp", items:[
+        {id:"mn1", img:"Deerty6/mn00.webp", name:"حبة مندي", basePrice:46, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:4},{name:"رز مندي", price:4},{name:"رز مثلوثه", price:4}
         ]},
-        {id:"mn2", img:"Dirty55/mn00.webp", name:"نص مندي", basePrice:24, availableIn:['branch1'], options:[
+        {id:"mn2", img:"Deerty6/mn00.webp", name:"نص مندي", basePrice:24, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:1},{name:"رز مندي", price:1},{name:"رز مثلوثه", price:1}
         ]}
     ]},
-    { section:"الأطباق الجانبية", sectionImg:"Dirty55/si00.webp", items:[
-        {id:"side0", img:"Dirty55/si08.webp", name:"شوربة", basePrice:8, isBestSeller:true, availableIn:['branch1'], options:[{name:"صحن", price:0}]},
-        {id:"side1", img:"Dirty55/si01.webp", name:"جريش", basePrice:0, isBestSeller:true, availableIn:['branch1'], options:[
+    { section:"الأطباق الجانبية", sectionImg:"Deerty6/si00.webp", items:[
+        {id:"side0", img:"Deerty6/si08.webp", name:"شوربة", basePrice:8, isBestSeller:true, availableIn:['branch1'], options:[{name:"صحن", price:0}]},
+        {id:"side1", img:"Deerty6/si01.webp", name:"جريش", basePrice:0, isBestSeller:true, availableIn:['branch1'], options:[
             {name:"صغير", price:5},{name:"كبير", price:10}
         ]}
     ]},
-    { section:"المشروبات", sectionImg:"Dirty55/dr00.webp", items:[
-        {id:"bev-p", img:"Dirty55/dr01.webp", name:"ببسي", basePrice:0, availableIn:['branch1'], options:[
+    { section:"المشروبات", sectionImg:"Deerty6/dr00.webp", items:[
+        {id:"bev-p", img:"Deerty6/dr01.webp", name:"ببسي", basePrice:0, availableIn:['branch1'], options:[
             {name:"صغير", price:3},{name:"وسط", price:6},{name:"كبير", price:9}
         ]}
     ]},
-    { section:"المقبلات", sectionImg:"Dirty55/ap00.webp", items:[
-        {id:"app-khdar", img:"Dirty55/ap01.webp", name:"سلطه خضار", basePrice:0, availableIn:['branch1'], options:[
+    { section:"المقبلات", sectionImg:"Deerty6/ap00.webp", items:[
+        {id:"app-khdar", img:"Deerty6/ap01.webp", name:"سلطه خضار", basePrice:0, availableIn:['branch1'], options:[
             {name:"صغير", price:7},{name:"وسط", price:13}
         ]}
     ]},
-    { section:"الكنافه", sectionImg:"Dirty55/kn00.webp", items:[
-        {id:"kna1", img:"Dirty55/kn01.webp", name:"كنافه قشطه", basePrice:10, availableIn:['branch1'], options:[{name:"", price:0}]}
+    { section:"الكنافه", sectionImg:"Deerty6/kn00.webp", items:[
+        {id:"kna1", img:"Deerty6/kn01.webp", name:"كنافه قشطه", basePrice:10, availableIn:['branch1'], options:[{name:"", price:0}]}
     ]}
 ];
 
@@ -544,7 +544,7 @@ function requestNotificationPermission() {
         if (permission === 'granted') {
             new Notification('أهلاً بك في سحايب ديرتي!', {
                 body: 'تم تفعيل الإشعارات بنجاح. سنعلمك بأحدث العروض!',
-                icon: 'Dirty55/Icon-192.png'
+                icon: 'Deerty6/Icon-192.png'
             });
         }
     });
@@ -702,7 +702,7 @@ function renderFavoritesShortcut(){
     const favCard = document.createElement('div');
     favCard.id = 'favQuickCard';
     favCard.className = 'sec-card';
-    favCard.innerHTML = `<img src="Dirty55/logo-bg.webp" alt="المفضلات" loading="lazy"><div class="sec-name">المفضلات ❤️</div>`;
+    favCard.innerHTML = `<img src="Deerty6/logo-bg.webp" alt="المفضلات" loading="lazy"><div class="sec-name">المفضلات ❤️</div>`;
     favCard.onclick = () => {
         // build a temporary section view that lists favorite items
         const favItems = processedMenuData.flatMap(s => s.items || []).filter(i => favorites.includes(i.id));
