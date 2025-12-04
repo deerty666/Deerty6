@@ -54,6 +54,14 @@ const menuData = [
         {id:"mn2", img:"mn00.webp", name:"نص مندي", basePrice:24, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:1},{name:"رز مندي", price:1},{name:"رز مثلوثه", price:1}
         ]}
+       ]},
+    { section:"مظغوط", sectionImg: "mn00.webp", items:[
+        {id:"mn1", img:"mn00.webp", name:"حبة مظغوط", basePrice:46, availableIn:['branch1'], options:[
+            {name:"رز شعبي", price:0},{name:"رز بشاور", price:4},{name:"رز مندي", price:4},{name:"رز مثلوثه", price:4}
+        ]},
+        {id:"mn2", img:"mn00.webp", name:"نص مظغوط", basePrice:24, availableIn:['branch1'], options:[
+            {name:"رز شعبي", price:0},{name:"رز بشاور", price:1},{name:"رز مندي", price:1},{name:"رز مثلوثه", price:1}
+        ]}
     ]},
     { section:"الأطباق الجانبية", sectionImg:"si00.webp", items:[
         {id:"side0", img:"si08.webp", name:"شوربة", basePrice:8, isBestSeller:true, availableIn:['branch1'], options:[{name:"صحن", price:0}]},
