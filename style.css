@@ -1,3 +1,7 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 :root {
     --gold: #E8C065;
     --old-brown: #1A1512;
