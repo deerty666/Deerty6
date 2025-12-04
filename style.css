@@ -1,0 +1,354 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --gold: #E8C065;
+    --old-brown: #1A1512;
+    --card-bg-dark: rgba(255,255,255,0.06);
+    --light-text: #f5f5f5;
+    --border-color: rgba(255,255,255,0.1);
+    --search-bg: #111;
+    --red: #D32F2F;
+}
+html, body {
+    height: 100%; 
+    padding: 0;
+    margin: 0;
+}
+
+/* خلفية وتنسيق أساسي */
+body {
+    margin: 0;
+    background: #0A0A0A;
+    font-family: 'Cairo', sans-serif;
+    color: white;
+}
+
+/* الهيدر */
+.header {
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--gold);
+}
+.header img {
+    height: 60px;
+}
+
+/* البانر */
+.banner {
+    background: linear-gradient(90deg, #E8C065, #F2D68E);
+    color: #000;
+    padding: 10px;
+    margin: 10px;
+    font-weight: 800;
+    border-radius: 12px;
+    text-align: center;
+}
+
+/* البحث */
+#searchBar {
+    width: 90%;
+    margin: 15px auto;
+    display: block;
+    padding: 12px;
+    background: #111;
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+}
+
+/* الأقسام */
+#sections {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 10px;
+    gap: 10px;
+    white-space: nowrap;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#sections::-webkit-scrollbar {
+    display: none;
+}
+.sec-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,192,101,0.2);
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 12px;
+    text-align: center;
+    transition: 0.3s;
+    min-width: 100px;
+    max-width: 100px;
+    flex-shrink: 0;
+}
+.sec-card.active {
+    border-color: var(--gold);
+    box-shadow: 0 0 15px rgba(232,192,101,0.4);
+}
+.sec-card img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+/* نهاية تعديل الأقسام */
+
+/* المنتجات */
+.item-card {
+    background: var(--card-bg-dark);
+    padding: 10px;
+    border-radius: 12px;
+    margin: 12px;
+    border: 1px solid rgba(232,192,101,0.3);
+    position: relative;
+}
+.item-card img {
+    width: 100%;
+    border-radius: 12px;
+}
+.add-btn {
+    background: var(--gold);
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 8px;
+    color: black;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* السلة (Cart Button) */
+#cartBtn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: black;
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 100;
+}
+#cartCount {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--red);
+    color: white;
+    font-size: 14px;
+    padding: 3px 8px;
+    border-radius: 50%;
+    font-weight: bold;
+}
+/* Overlay */
+#cartOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    display: none;
+    transition: opacity 0.3s;
+    opacity: 0;
+}
+#cartOverlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* السلة (Cart Drawer) - التعديل الحاسم لتصحيح الارتفاع والتمرير */
+#cartDrawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #0A0A0A;
+    height: 70vh; /* 🚨🚨 التعديل الحاسم الأول: استخدام vh لثبات الارتفاع على الجوال */
+    border-radius: 20px 20px 0 0;
+    border-top: 2px solid var(--gold);
+    transform: translateY(100%);
+    transition: 0.3s;
+    padding: 15px;
+    box-sizing: border-box;
+    z-index: 1001;
+    display: flex; 
+    flex-direction: column; 
+}
+
+#cartDrawer.open {
+    transform: translateY(0);
+}
+
+/* العناصر الثابتة (لا تتأثر بالتمرير) */
+.cart-header, .location-area, #totalBreakdown, .delivery-options-container, .primary-btn, .danger-btn {
+    flex-shrink: 0;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+.cart-header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* قائمة المنتجات (Cart Items) - التعديل الحاسم للتمرير */
+#cartItems {
+    flex-grow: 1; 
+    overflow-y: auto;
+    min-height: 0; /* 🚨🚨 التعديل الحاسم الثاني: يمنع الانهيار في Flexbox */
+    padding-bottom: 15px;
+}
+
+/* صف المنتج في السلة */
+.cart-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.item-note-display {
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-top: 5px;
+}
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+.controls button {
+    background: var(--card-bg-dark);
+    color: var(--light-text);
+    border: 1px solid var(--border-color);
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.controls button:first-child, .controls button:nth-child(3) {
+    background: var(--gold);
+    color: black;
+}
+.controls button:last-child {
+    background: var(--red);
+    color: white;
+    padding: 6px;
+    font-size: 0.8rem;
+}
+.delivery-options-container {
+    padding: 15px 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 10px;
+}
+/* إجمالي السلة */
+#totalBreakdown {
+    padding-top: 10px;
+}
+.total-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+.final-total-line {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--gold);
+    border-top: 1px dashed var(--border-color);
+    padding-top: 10px;
+    margin-top: 5px;
+}
+/* الأزرار الرئيسية */
+.primary-btn, .danger-btn {
+    border: none;
+    width: 100%;
+    padding: 12px;
+    font-weight: 800;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.primary-btn {
+    background: var(--gold);
+    color: black;
+}
+.danger-btn {
+    background: var(--red);
+    color: white;
+    margin-top: 10px;
+}
+
+/* تأثير الاهتزاز عند الإضافة */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+.shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* 🚨🚨 التعديل الثالث: تنسيق نافذة اختيار الإضافات (Options Modal Styles) 🚨🚨 */
+.option-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: none; 
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: #111;
+    border: 2px solid var(--gold);
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: var(--light-text);
+}
+.options-container {
+    padding: 10px 0;
+    margin-bottom: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.opt-btn { 
+    background: #222; 
+    border: 1px solid rgba(232,192,101,0.3);
+    color: #fff;
+    padding: 8px 10px; 
+    margin: 4px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: background 0.2s;
+}
+.opt-btn:hover, .opt-btn.selected {
+    background: var(--gold);
+    color: black;
+}
