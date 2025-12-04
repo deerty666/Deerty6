@@ -45,6 +45,7 @@ const menuData = [
         ]},
         {id:"md2", img:"md00.webp", name:"نص مظبي", basePrice:24, availableIn:['branch1'], options:[
             {name:"رز شعبي", price:0},{name:"رز بشاور", price:1},{name:"رز مندي", price:1},{name:"رز مثلوثه", price:1}
+           {name:"صغير", price:7},{name:"وسط", price:13}
         ]}
     ]},
     { section:"مندي", sectionImg: "mn00.webp", items:[
