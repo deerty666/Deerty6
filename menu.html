@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>قائمة الطعام – لبن الاحمدية</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> 
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A1512">
+
+</head>
+<body>
+
+<header class="header">
+    <img src="logo.png" alt="شعار ديرتي" class="logo">
+</header>
+
+<div class="banner">🔥 عروض اليوم – اطلب الآن 🔥</div>
+
+<input type="search" id="searchBar" placeholder="ابحث عن صنف..." aria-label="Search">
+
+<div id="sections"></div>
+<main id="menuList"></main>
+
+<div id="optionModal" class="option-modal-overlay">
+    <div class="modal-content">
+        <h3 id="modalTitle">تفاصيل الوجبة</h3>
+        <div id="modalOptions" class="options-container">
+            </div>
+        <label for="itemNote">ملاحظة خاصة (اختياري):</label>
+        <input type="text" id="itemNote" placeholder="لا بأس بالبهارات، اترك البصل..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; margin-bottom: 15px;">
+        <button id="modalConfirm" class="primary-btn">أضف للسلة</button>
+    </div>
+</div>
+
+<div id="cartOverlay"></div>
+<div id="cartDrawer" aria-hidden="true">
+  <div class="cart-header">
+    <span>سلة الطلبات</span>
+    <button id="closeCartBtn">✖</button>
+  </div>
+
+  <div id="cartItems"></div>
+
+  <div class="location-area">
+    <button id="getLocationBtn" class="primary-btn" style="background:#555; margin-bottom: 10px;">📍 تحديد موقع التوصيل</button>
+    <div id="locationStatus" style="font-size: 0.9rem; margin-bottom: 15px;">الموقع غير محدد. اضغط على الزر أعلاه.</div>
+    
+    <label for="manualAddress">ملاحظة التوصيل / عنوان يدوي:</label>
+    <input type="text" id="manualAddress" placeholder="رقم المنزل، تفاصيل الوصول، إلخ" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #333; background: #111; color: white;">
+    <button id="installAppBtn" class="primary-btn" style="display: none; background: #9c27b0; margin-top: 15px;">📲 تثبيت التطبيق</button>
+  </div>
+  
+  <div id="totalBreakdown"></div>
+  <div class="delivery-options-container">
+    <label><input type="radio" name="deliveryType" value="pickup" checked> استلام</label>
+    <label><input type="radio" name="deliveryType" value="delivery"> توصيل (5 ريال)</label>
+  </div>
+
+  <button id="sendWhatsapp" class="primary-btn">إرسال عبر واتساب</button>
+  <button id="clearCart" class="danger-btn">مسح السلة</button>
+</div>
+
+<button id="cartBtn" aria-label="cart">🛒<span id="cartCount"></span></button>
+
+<script src="app.js" type="module"></script> 
+
+</body>
+</html>
