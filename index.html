@@ -37,13 +37,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* 🔴 عدّل هذه الثلاث فقط */
 const firebaseConfig = {
-  apiKey: "PUT_API_KEY",
-  authDomain: "PUT_AUTH_DOMAIN",
-  projectId: "PUT_PROJECT_ID"
+  apiKey: "AIzaSyCH3-skWKu3Z_6y9Y9D9dxOSLA4hGHBMBo",
+  authDomain: "alraiee.firebaseapp.com", // القيمة المشتقة
+  projectId: "alraiee"
 };
-/* 🔴 انتهى التعديل */
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
