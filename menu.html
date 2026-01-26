@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>المنيو</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>🍽️ المنيو</header>
+
+<div id="sections"></div>
+<main id="menu"></main>
+
+<button id="cartBtn">🛒 <span id="cartCount">0</span></button>
+
+<div id="cart">
+  <h3>سلة الطلب</h3>
+  <div id="cartItems"></div>
+
+  <label><input type="radio" name="type" checked> استلام</label>
+  <label><input type="radio" name="type"> توصيل</label>
+
+  <button id="locBtn">📍 تحديد الموقع</button>
+  <p id="locText"></p>
+
+  <button id="send">📲 إرسال الطلب</button>
+</div>
+
+<!-- 🔴 مهم: السكربت في آخر الصفحة -->
+<script src="script.js"></script>
+</body>
+</html>
