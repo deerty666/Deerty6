@@ -428,7 +428,7 @@ function renderMenu(sectionName, searchTerm = ''){
 
     filteredItems.forEach(item=>{
       // ====== Admin overrides ======
-if (isAdmin && adminPrices[item.id] !== undefined) {
+if (adminPrices[item.id] !== undefined) {
     item.basePrice = adminPrices[item.id];
 }
 
