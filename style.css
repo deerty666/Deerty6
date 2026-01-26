@@ -825,3 +825,38 @@ button:active {
     background:#555;
     color:#fff;
 }
+/* ===============================
+   FIX: وضوح نص السلة + زر الإغلاق
+=============================== */
+
+/* نصوص المنتجات داخل السلة */
+.cart-row,
+.cart-row div {
+    color: #ffffff !important;
+}
+
+/* اسم المنتج */
+.cart-row > div:first-child div:first-child {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+/* السعر داخل السلة */
+.cart-row div div {
+    color: #eaeaea !important;
+}
+
+/* ملاحظة المنتج */
+.item-note-display {
+    color: #cccccc !important;
+}
+
+/* زر إغلاق السلة ✖ */
+#closeCartBtn {
+    color: #ffffff !important;
+    font-size: 22px;
+}
+
+#closeCartBtn:hover {
+    color: #ff4d4d !important;
+}
