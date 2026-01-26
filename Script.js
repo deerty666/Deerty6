@@ -309,12 +309,24 @@ function savePrice(itemId) {
     renderMenu(currentSection);
 }
 
-function toggleItem(itemId) {
-    adminDisabled[itemId] = !adminDisabled[itemId];
-    localStorage.setItem('admin_disabled', JSON.stringify(adminDisabled));
+function savePrice(itemId) {
+    const input = document.getElementById(`price-${itemId}`);
+    if (!input) return;
 
-    // 🔥 إعادة رسم القائمة
+    const newPrice = parseFloat(input.value);
+    if (isNaN(newPrice)) return;
+
+    adminPrices[itemId] = newPrice;
+    localStorage.setItem('admin_prices', JSON.stringify(adminPrices));
+
     renderMenu(currentSection);
+
+    // 📱 حل مشكلة Safari / iPhone
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        setTimeout(() => {
+            location.reload();
+        }, 300);
+    }
 }
 /* ====== متغيرات PWA و SearchBar ====== */
 let deferredPrompt = null;
@@ -1033,7 +1045,7 @@ renderCart();
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         // تم التأكد من المسار إلى /Dirty55/
-        navigator.serviceWorker.register('/Dirty55/service-worker.js') .then(reg => {
+        navigator.serviceWorker.register('service-worker.js') .then(reg => {
             console.log('Service Worker Registered!', reg.scope);
         })
         .catch(err => {
@@ -1083,4 +1095,12 @@ document.addEventListener('click', function (e) {
         closeCart(); // اختياري
     }
 });
+// 🔥 FIX iOS Cache (مهم للآيفون)
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(reg => reg.unregister());
+        });
+    }
+}
 // ------------------------------------------
