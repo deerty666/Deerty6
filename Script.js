@@ -427,9 +427,13 @@ function renderMenu(sectionName, searchTerm = ''){
     }
 
     filteredItems.forEach(item=>{
-      // ====== Admin overrides ======
+// ====== Admin overrides ======
 if (adminPrices[item.id] !== undefined) {
     item.basePrice = adminPrices[item.id];
+}
+
+if (adminDisabled[item.id] === true) {
+    item.isAvailable = false;
 }
 
 if (isAdmin && adminDisabled[item.id] === true) {
