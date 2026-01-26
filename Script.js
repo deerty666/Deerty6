@@ -1072,5 +1072,15 @@ function flyToCart(imgElement) {
         flyingImg.remove();
     }, 800);
 }
+document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'clearCart') {
 
+        if (!confirm('هل أنت متأكد من مسح السلة بالكامل؟')) return;
+
+        cart = [];
+        localStorage.removeItem('deerty_cart');
+        renderCart();
+        closeCart(); // اختياري
+    }
+});
 // ------------------------------------------
