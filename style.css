@@ -1,0 +1,13 @@
+body{margin:0;font-family:Arial;background:#111;color:#fff}
+header{background:#000;padding:15px;text-align:center;position:sticky;top:0}
+#sections{display:flex;gap:10px;padding:10px;overflow-x:auto}
+.section{background:#333;padding:10px;border-radius:8px;cursor:pointer}
+.section.active{background:#c39e6a;color:#000}
+#menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px}
+.card{background:#222;border-radius:8px;overflow:hidden;position:relative}
+.card img{width:100%;height:120px;object-fit:cover}
+.card button{background:#c39e6a;border:none;padding:8px;width:100%}
+.admin-tools{position:absolute;top:5px;left:5px;display:flex;gap:5px}
+.admin-tools button{font-size:12px}
+#cartBtn{position:fixed;bottom:10px;right:10px;padding:15px}
+#cart{position:fixed;right:0;top:0;background:#000;width:300px;height:100%;display:none;padding:10px}
