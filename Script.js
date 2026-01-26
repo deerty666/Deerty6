@@ -294,7 +294,28 @@ function processMenuData(data) {
 // نستخدم الدالة الجديدة لمعالجة القائمة مرة واحدة
 const processedMenuData = processMenuData(menuData); 
 
+/* ====== Admin Save / Toggle ====== */
+function savePrice(itemId) {
+    const input = document.getElementById(`price-${itemId}`);
+    if (!input) return;
 
+    const newPrice = parseFloat(input.value);
+    if (isNaN(newPrice)) return;
+
+    adminPrices[itemId] = newPrice;
+    localStorage.setItem('admin_prices', JSON.stringify(adminPrices));
+
+    // 🔥 إعادة رسم القائمة لتحديث السعر فورًا
+    renderMenu(currentSection);
+}
+
+function toggleItem(itemId) {
+    adminDisabled[itemId] = !adminDisabled[itemId];
+    localStorage.setItem('admin_disabled', JSON.stringify(adminDisabled));
+
+    // 🔥 إعادة رسم القائمة
+    renderMenu(currentSection);
+}
 /* ====== متغيرات PWA و SearchBar ====== */
 let deferredPrompt = null;
 let currentSection = processedMenuData[0].section; // استخدام البيانات المعالجة لتحديد القسم الحالي
