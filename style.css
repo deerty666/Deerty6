@@ -424,7 +424,7 @@ header img {
 }
 /* === FIX: تفعيل اللمس داخل السلة === */
 #cartOverlay {
-    pointer-events: auto;
+    pointer-events: none; /* مهم جداً */
 }
 
 #cartDrawer {
