@@ -472,8 +472,10 @@ card.innerHTML = `
             id="price-${item.id}"
             value="${item.basePrice}">
 
-        <button onclick="savePrice(&quot;${item.id}&quot;)">💾</button>
-        <button onclick="toggleItem(&quot;${item.id}&quot;)">
+        <button type="button"
+onclick="event.stopPropagation(); savePrice(&quot;${item.id}&quot;)">💾</button>
+        <button type="button"
+onclick="event.stopPropagation(); toggleItem(&quot;${item.id}&quot;)">
             ${item.isAvailable === false ? '▶️ تفعيل' : '⛔ إيقاف'}
         </button>
     </div>
