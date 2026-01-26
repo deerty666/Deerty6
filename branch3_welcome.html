@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>فرع الجوافة</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Cairo", sans-serif;
+    background: #1A1512;
+    color: white;
+    text-align: center;
+}
+.container {
+    padding: 25px;
+}
+img.hero {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.5);
+    margin-bottom: 20px;
+}
+h1 {
+    color: #C9A676;
+    margin-bottom: 10px;
+}
+p {
+    color: #ddd;
+    font-size: 1.1rem;
+}
+.btn {
+    background: #C9A676;
+    color: #1A1512;
+    display: inline-block;
+    padding: 12px 25px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+.count {
+    margin-top: 15px;
+    color: #C9A676;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+</style>
+
+<script>
+let sec = 3;
+function startTimer(){
+    let timer = setInterval(()=>{
+        document.getElementById("counter").innerText = sec;
+        sec--;
+        if(sec < 0){
+            clearInterval(timer);
+            window.location.href = "menu.html?branch=branch3";
+        }
+    },1000);
+}
+window.onload = startTimer;
+</script>
+</head>
+
+<body>
+<div class="container">
+
+<img class="hero" src="welcome_branch3.webp">
+
+<h1>فرع الجوافة يرحّب بكم 🤩</h1>
+<p>استمتعوا بأشهى أطباق ديرتي — جودة أعلى وطعم لا يقاوم 🔥</p>
+
+<a class="btn" href="menu.html?branch=branch3">متابعة الآن</a>
+
+<div class="count">سيتم تحويلك خلال <span id="counter">3</span> ثوانٍ</div>
+
+</div>
+</body>
+</html>
