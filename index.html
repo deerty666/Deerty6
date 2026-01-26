@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>مطاعم الجنوب للأسماك - اختيار الفرع</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A1512"> 
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Cairo", sans-serif;
+            background: #1A1512;
+        }
+
+        .branch-selection-container {
+            max-width: 400px;
+            width: 90%;
+            padding: 25px;
+            background: var(--card-bg-dark);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        .branch-selection-container h1 {
+            color: var(--gold);
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .branch-link {
+            display: block;
+            background: var(--gold);
+            color: var(--old-brown);
+            text-decoration: none;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .branch-link:hover {
+            background: #a07c4c;
+            transform: translateY(-2px);
+        }
+    </style>
+
+    <script>
+        // 🔁 تحويل تلقائي إذا كان الفرع محفوظ
+        const allowedBranches = ['branch1', 'branch3'];
+        const savedBranch = localStorage.getItem('selectedBranch');
+
+        if (allowedBranches.includes(savedBranch)) {
+            window.location.href = `welcome.html?branch=${savedBranch}`;
+        }
+    </script>
+</head>
+
+<body>
+
+<div class="branch-selection-container">
+    <h1>اختر الفرع الأقرب إليك</h1>
+
+    <a href="welcome.html?branch=branch1"
+       class="branch-link"
+       onclick="localStorage.setItem('selectedBranch','branch1')">
+        نجران الجوافة
+    </a>
+
+    <a href="welcome.html?branch=branch3"
+       class="branch-link"
+       onclick="localStorage.setItem('selectedBranch','branch3')">
+        نجران طريق الرديف
+    </a>
+</div>
+
+</body>
+</html>
