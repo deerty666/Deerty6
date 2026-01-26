@@ -487,7 +487,7 @@ onclick="event.stopPropagation(); toggleItem(&quot;${item.id}&quot;)">
 `;
 
         if (isAvailable) {
-            card.querySelector('button').onclick = function() {
+            card.querySelector('.add-btn').onclick = function() {
                 const itemForCart = {...item};
                 
                 // 🚀 NEW: الحصول على مرجع الصورة لبطاقة المنتج الحالية
