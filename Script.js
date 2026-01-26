@@ -725,7 +725,29 @@ const finalTotal = subtotal + currentDeliveryFee;
     localStorage.setItem('deerty_cart', JSON.stringify(cart));
 }
 
+/* ====== Cart Quantity Controls ====== */
 
+// ➕ ➖ تعديل الكمية
+function updateQty(index, change) {
+    if (!cart[index]) return;
+
+    cart[index].qty += change;
+
+    // إذا وصلت الكمية 0 نحذف الصنف
+    if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+    }
+
+    saveCart(); // يحفظ ويعيد رسم السلة
+}
+
+// 🗑 حذف عنصر كامل
+function removeItem(index) {
+    if (!cart[index]) return;
+
+    cart.splice(index, 1);
+    saveCart(); // يحفظ ويعيد رسم السلة
+}
 /* ====== Cart UI and WhatsApp - يستخدم رقم الواتساب الخاص بالفرع ====== */
 const closeCart = () => {
     cartDrawer.classList.remove('open');
@@ -1050,28 +1072,5 @@ function flyToCart(imgElement) {
         flyingImg.remove();
     }, 800);
 }
-/* ===============================
-   FIX: Cart Buttons Events
-=============================== */
-document.addEventListener("click", function (e) {
 
-    // ➕ زيادة الكمية
-    if (e.target.classList.contains("btn-plus")) {
-        const id = e.target.dataset.id;
-        increaseQty(id);
-    }
-
-    // ➖ إنقاص الكمية
-    if (e.target.classList.contains("btn-minus")) {
-        const id = e.target.dataset.id;
-        decreaseQty(id);
-    }
-
-    // 🗑 حذف عنصر
-    if (e.target.classList.contains("btn-remove")) {
-        const id = e.target.dataset.id;
-        removeFromCart(id);
-    }
-
-});
 // ------------------------------------------
