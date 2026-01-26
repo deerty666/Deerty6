@@ -422,7 +422,26 @@ header img {
     display: flex;
     flex-direction: column;
 }
+/* === FIX: تفعيل اللمس داخل السلة === */
+#cartOverlay {
+    pointer-events: auto;
+}
 
+#cartDrawer {
+    pointer-events: auto;
+}
+
+#cartDrawer * {
+    pointer-events: auto;
+}
+
+/* أزرار السلة */
+.cart-row button,
+.cart-footer button {
+    pointer-events: auto !important;
+    cursor: pointer;
+    z-index: 10001;
+}
 #cartDrawer.open {
     transform: translateX(0);
 }
