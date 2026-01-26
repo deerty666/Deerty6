@@ -1050,4 +1050,28 @@ function flyToCart(imgElement) {
         flyingImg.remove();
     }, 800);
 }
+/* ===============================
+   FIX: Cart Buttons Events
+=============================== */
+document.addEventListener("click", function (e) {
+
+    // ➕ زيادة الكمية
+    if (e.target.classList.contains("btn-plus")) {
+        const id = e.target.dataset.id;
+        increaseQty(id);
+    }
+
+    // ➖ إنقاص الكمية
+    if (e.target.classList.contains("btn-minus")) {
+        const id = e.target.dataset.id;
+        decreaseQty(id);
+    }
+
+    // 🗑 حذف عنصر
+    if (e.target.classList.contains("btn-remove")) {
+        const id = e.target.dataset.id;
+        removeFromCart(id);
+    }
+
+});
 // ------------------------------------------
