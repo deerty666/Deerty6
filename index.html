@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحايب ديرتي - نظام الطلبات</title>
+    
+    <!-- PWA - تثبيت كتطبيق -->
+    <meta name="theme-color" content="#e67e22">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="logo.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        
+        :root {
+            --bg: #f0f2f5;
+            --panel: white;
+            --text: #2c3e50;
+        }
+        [data-theme="dark"] {
+            --bg: #1e1e2e;
+            --panel: #2a2a3d;
+            --text: #e0e0e0;
+        }
+
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            margin: 0; 
+            padding: 10px; 
+            direction: rtl; 
+        }
+        .container { max-width: 1280px; margin: 0 auto; display: flex; gap: 16px; flex-wrap: wrap; }
+        .panel { background: var(--panel); border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); padding: 18px; flex: 1; min-width: 320px; }
+
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 12px; }
+        .cat-box { background: #2c3e50; color: white; padding: 16px 10px; text-align: center; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; }
+        .cat-box.active { background: #e67e22; transform: scale(1.08); }
+
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 12px; }
+        .item-card { background: var(--panel); border: 1px solid #ddd; padding: 14px; border-radius: 14px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .item-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .item-card .price { color: #e67e22; font-weight: 700; margin-top: 6px; }
+
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #ccc; }
+        .qty-btn { width: 28px; height: 28px; border: none; background: #e67e22; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        button { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; }
+        .delete-btn, .note-btn { background: #e74c3c; color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 14px; cursor: pointer; }
+
+        input, select, textarea { width: 100%; padding: 11px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        .search-box { padding: 12px; width: 100%; margin-bottom: 15px; border-radius: 10px; border: 1px solid #ddd; }
+
+        /* الشعار في الشاشة */
+        .logo-header { text-align: center; margin-bottom: 10px; }
+        .logo-header img { max-width: 180px; height: auto; }
+
+        /* تحسين الطباعة للطابعة 80mm */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            #printArea { 
+                width: 78mm !important; 
+                margin: 0 auto; 
+                padding: 5mm; 
+                box-sizing: border-box; 
+                font-size: 11.8px; 
+                line-height: 1.45;
+            }
+            .receipt-logo { max-width: 55mm; height: auto; margin: 0 auto 8px; display: block; }
+            .item-row { display: flex; justify-content: space-between; margin: 5px 0; }
+            .total-box { font-size: 15px; font-weight: bold; text-align: center; border-top: 2px dashed #000; padding-top: 10px; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="container">
+        <!-- لوحة المنيو -->
+        <div class="panel no-print" style="flex: 2;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3>📂 الأقسام</h3>
+                <button onclick="toggleTheme()" style="width:auto; padding:8px 14px; background:#34495e; color:white;">🌙 الوضع الليلي</button>
+            </div>
+            <div id="categoriesContainer" class="categories-grid"></div>
+
+            <hr style="margin:20px 0;">
+
+            <h3>🍔 الأصناف</h3>
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن صنف..." onkeyup="render()">
+
+            <div id="itemsContainer" class="items-grid"></div>
+
+            <div style="margin-top:25px; padding:18px; background:#f8f9fa; border-radius:12px;">
+                <h4>إضافة قسم جديد</h4>
+                <input id="newCatName" placeholder="اسم القسم">
+                <button onclick="addCategory()" style="background:#34495e; color:white;">+ إضافة القسم</button>
+
+                <hr style="margin:15px 0;">
+
+                <h4>إضافة صنف جديد</h4>
+                <select id="catSelect"></select>
+                <input id="newItemName" placeholder="اسم الصنف">
+                <input id="newItemPrice" type="number" placeholder="السعر">
+                <button onclick="addItem()" style="background:#e67e22; color:white;">🍔 إضافة الصنف</button>
+            </div>
+        </div>
+
+        <!-- منطقة الفاتورة والسلة -->
+        <div id="printArea" class="panel">
+            <div class="logo-header no-print">
+                <img src="logo.png" alt="شعار سحايب ديرتي" style="max-width:180px;">
+            </div>
+
+            <div id="receiptHeader" style="text-align:center; margin-bottom:10px;">
+                <h2 style="margin:5px 0 2px;">سحايب ديرتي 🍽️</h2>
+                <p style="margin:0; font-size:13px; color:#e67e22;">فاتورة حجز مؤقتة</p>
+                <p style="margin:8px 0 0;">رقم الفاتورة: #<span id="invNum">1001</span></p>
+            </div>
+
+            <div class="no-print">
+                <input id="customerName" placeholder="اسم العميل">
+                <input id="customerPhone" placeholder="رقم الجوال">
+                <input id="customerLoc" placeholder="موقع التوصيل">
+            </div>
+
+            <div class="print-only" style="font-size:11.5px; margin:10px 0 15px;">
+                <div id="dispName"></div>
+                <div id="dispPhone"></div>
+                <div id="dispLoc"></div>
+            </div>
+
+            <h4 style="margin:15px 0 8px;">🛒 السلة</h4>
+            <div id="cartItems"></div>
+
+            <div style="margin-top:20px; padding-top:15px; border-top:2px solid #ddd;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>رسوم التوصيل:</span>
+                    <span><span id="dispDelivery">5.00</span> ر.س</span>
+                </div>
+                <input class="no-print" id="deliveryFee" type="number" value="5" step="0.5" oninput="updateCart()">
+
+                <div class="total-box">
+                    الإجمالي: <span id="totalPrice" style="color:#e67e22;">0.00</span> ريال
+                </div>
+            </div>
+
+            <div class="no-print" style="margin-top:25px;">
+                <button onclick="printOrder()" style="background:#27ae60; color:white; font-size:17px; padding:16px;">🖨️ طباعة الفاتورة</button>
+                <button onclick="sendWhatsApp()" style="background:#25D366; color:white; padding:14px;">📲 إرسال عبر واتساب</button>
+                <button onclick="clearCart()" style="background:#95a5a6; color:white;">🗑️ تفريغ السلة</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // باقي الـ JavaScript كامل (نفس النسخة السابقة مع تحسين بسيط للطباعة)
+        let data = JSON.parse(localStorage.getItem("sahayibMenu")) || [];
+        let cart = JSON.parse(localStorage.getItem("sahayibCart")) || [];
+        let activeCatIdx = 0;
+        let invNum = parseInt(localStorage.getItem("sahayibInvNum")) || 1001;
+        let isDark = localStorage.getItem("theme") === "dark";
+
+        if (isDark) document.body.setAttribute("data-theme", "dark");
+
+        function saveMenu() { localStorage.setItem("sahayibMenu", JSON.stringify(data)); render(); }
+        function saveCart() { localStorage.setItem("sahayibCart", JSON.stringify(cart)); }
+
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.setAttribute("data-theme", isDark ? "dark" : "light");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+        }
+
+        function render() {
+            const catDiv = document.getElementById("categoriesContainer");
+            const itemDiv = document.getElementById("itemsContainer");
+            const select = document.getElementById("catSelect");
+            const search = document.getElementById("searchInput").value.toLowerCase().trim();
+
+            catDiv.innerHTML = ""; itemDiv.innerHTML = ""; select.innerHTML = "";
+
+            data.forEach((cat, idx) => {
+                catDiv.innerHTML += `<div class="cat-box \( {idx === activeCatIdx ? 'active' : ''}" onclick="activeCatIdx= \){idx}; render();">${cat.name}</div>`;
+                select.innerHTML += `<option value="\( {idx}"> \){cat.name}</option>`;
+            });
+
+            if (data[activeCatIdx]) {
+                const filtered = data[activeCatIdx].items.filter(item => item.name.toLowerCase().includes(search));
+                filtered.forEach((item) => {
+                    const originalIdx = data[activeCatIdx].items.findIndex(x => x.name === item.name);
+                    itemDiv.innerHTML += `
+                        <div class="item-card" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">
+                            <div style="font-weight:600;">${item.name}</div>
+                            <div class="price">${item.price} ر.س</div>
+                            <button class="delete-btn" onclick="deleteItem(${activeCatIdx}, ${originalIdx}); event.stopImmediatePropagation();">×</button>
+                        </div>`;
+                });
+            }
+            updateCart();
+        }
+
+        function addToCart(name, price) {
+            const exist = cart.find(i => i.name === name);
+            if (exist) exist.qty++;
+            else cart.push({ name, price: parseFloat(price), qty: 1, note: "" });
+            saveCart();
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartDiv = document.getElementById("cartItems");
+            cartDiv.innerHTML = "";
+            let subtotal = 0;
+
+            if (cart.length === 0) {
+                cartDiv.innerHTML = `<p style="text-align:center; color:#888; padding:30px;">السلة فارغة</p>`;
+                document.getElementById("totalPrice").innerText = "0.00";
+                return;
+            }
+
+            cart.forEach((item, i) => {
+                subtotal += item.price * item.qty;
+                cartDiv.innerHTML += `
+                    <div class="cart-item">
+                        <div style="flex:1;">
+                            <strong>${item.name}</strong> × ${item.qty}<br>
+                            <small style="color:#e67e22;">${item.price} ر.س</small>
+                            ${item.note ? `<br><small style="color:#27ae60;">📝 ${item.note}</small>` : ''}
+                        </div>
+                        <div>
+                            <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+                            <span style="margin:0 8px;">${item.qty}</span>
+                            <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+                            <button class="note-btn" onclick="addNote(${i}); event.stopImmediatePropagation();" style="margin-top:6px; background:#3498db;">📝</button>
+                            <button onclick="removeFromCart(${i}); event.stopImmediatePropagation();" style="margin-top:6px; background:#e74c3c; font-size:12px;">حذف</button>
+                        </div>
+                    </div>`;
+            });
+
+            const delivery = parseFloat(document.getElementById("deliveryFee").value) || 0;
+            document.getElementById("dispDelivery").innerText = delivery.toFixed(2);
+            document.getElementById("totalPrice").innerText = (subtotal + delivery).toFixed(2);
+            document.getElementById("invNum").innerText = invNum;
+        }
+
+        function addNote(index) {
+            const note = prompt("أدخل الملاحظة لهذا الصنف:", cart[index].note || "");
+            if (note !== null) {
+                cart[index].note = note.trim();
+                saveCart();
+                updateCart();
+            }
+        }
+
+        function changeQty(index, change) {
+            cart[index].qty += change;
+            if (cart[index].qty < 1) cart[index].qty = 1;
+            saveCart();
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            if (confirm("حذف هذا الصنف من السلة؟")) {
+                cart.splice(index, 1);
+                saveCart();
+                updateCart();
+            }
+        }
+
+        function deleteItem(catIdx, itemIdx) {
+            if (confirm("حذف الصنف من القائمة نهائياً؟")) {
+                data[catIdx].items.splice(itemIdx, 1);
+                saveMenu();
+            }
+        }
+
+        function printOrder() {
+            document.getElementById("dispName").innerText = "👤 العميل: " + (document.getElementById("customerName").value || "عميل نقدي");
+            document.getElementById("dispPhone").innerText = "📞 الجوال: " + (document.getElementById("customerPhone").value || "-");
+            document.getElementById("dispLoc").innerText = "📍 الموقع: " + (document.getElementById("customerLoc").value || "-");
+
+            window.print();
+
+            invNum++;
+            localStorage.setItem("sahayibInvNum", invNum);
+        }
+
+        function sendWhatsApp() {
+            const phone = document.getElementById("customerPhone").value.trim();
+            if (!phone) return alert("يرجى إدخال رقم الجوال");
+
+            let text = `*🧾 فاتورة سحايب ديرتي*%0A🍽️ *مطعم سحايب ديرتي*%0Aفاتورة حجز مؤقتة%0A`;
+            text += `👤 العميل: ${document.getElementById("customerName").value || "عميل نقدي"}%0A`;
+            text += `📍 الموقع: ${document.getElementById("customerLoc").value || "-"}%0A--------------------------%0A`;
+
+            cart.forEach(i => {
+                text += `• ${i.name} × ${i.qty} = ${(i.price * i.qty).toFixed(2)} ر.س%0A`;
+                if (i.note) text += `   📝 ${i.note}%0A`;
+            });
+
+            const delivery = document.getElementById("deliveryFee").value || 0;
+            text += `🚚 التوصيل: ${delivery} ر.س%0A💰 *الإجمالي: ${document.getElementById("totalPrice").innerText} ريال*%0A%0A`;
+            text += `شكراً لثقتكم 💙 نتمنى لكم وجبة شهية!`;
+
+            const cleanPhone = phone.startsWith('0') ? phone.substring(1) : phone;
+            window.open(`https://wa.me/966\( {cleanPhone}?text= \){text}`, '_blank');
+        }
+
+        function addCategory() {
+            const name = document.getElementById("newCatName").value.trim();
+            if (name) {
+                data.push({ name, items: [] });
+                saveMenu();
+                document.getElementById("newCatName").value = "";
+            }
+        }
+
+        function addItem() {
+            const idx = document.getElementById("catSelect").value;
+            const name = document.getElementById("newItemName").value.trim();
+            const price = parseFloat(document.getElementById("newItemPrice").value);
+
+            if (name && !isNaN(price) && idx !== "") {
+                data[idx].items.push({ name, price });
+                saveMenu();
+                document.getElementById("newItemName").value = "";
+                document.getElementById("newItemPrice").value = "";
+            } else {
+                alert("يرجى إدخال اسم الصنف والسعر");
+            }
+        }
+
+        function clearCart() {
+            if (confirm("تفريغ السلة بالكامل؟")) {
+                cart = [];
+                saveCart();
+                updateCart();
+            }
+        }
+
+        // تشغيل
+        render();
+        updateCart();
+    </script>
+</body>
+</html>
