@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحايب ديرتي - POS شامل</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; direction: rtl; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 15px; flex-wrap: wrap; }
+        .panel { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 15px; flex: 1; min-width: 320px; }
+        
+        /* تصميم الأقسام والأصناف */
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 15px; }
+        .cat-box { position: relative; background: #2c3e50; color: white; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .cat-box.active { background: #e67e22; }
+        .delete-icon { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 22px; height: 22px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; z-index: 5; }
+
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+        .item-card { position: relative; background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; }
+        
+        /* أزرار الكمية في السلة */
+        .qty-btn { width: 25px; height: 25px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; }
+        .btn-plus { background: #27ae60; }
+        .btn-minus { background: #e67e22; }
+
+        /* 🖨️ إعدادات الطباعة - حل مشكلة القص النهائي */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0 !important; margin: 0 !important; }
+            #printArea { 
+                width: 52mm !important; /* منطقة الأمان المعتمدة */
+                margin: 0 auto !important; /* التوسيط الإجباري */
+                padding: 0 !important;
+                border: none !important;
+            }
+            #printArea * { text-align: center !important; } /* ضمان بقاء النص في الوسط */
+            .item-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 10pt; border-bottom: 1px dashed #000; margin-bottom: 2px; }
+            .total-print { font-size: 14pt !important; border-top: 1px solid #000; margin-top: 5px; }
+            @page { size: 80mm auto; margin: 0; }
+        }
+        .print-only { display: none; }
+        @media print { .print-only { display: block !important; } }
+        .restaurant-logo { width: 40mm; height: auto; margin: 0 auto; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel no-print" style="flex: 2;">
+            <div id="categoriesContainer" class="categories-grid"></div>
+            <hr>
+            <div id="itemsContainer" class="items-grid"></div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 1px solid #eee;">
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <input id="newCatName" placeholder="اسم قسم جديد" style="flex:1; padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <button onclick="addCategory()" style="background:#34495e; color:white; border:none; padding:8px 15px; border-radius:5px;">+ قسم</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <select id="catSelect" style="padding:8px; border-radius:5px; border:1px solid #ccc;"></select>
+                    <input id="newItemName" placeholder="اسم الصنف" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <input id="newItemPrice" type="number" placeholder="السعر" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <button onclick="addItem()" style="background:#e67e22; color:white; border:none; padding:10px; border-radius:5px; font-weight:bold;">+ إضافة صنف</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="printArea" class="panel">
+            <div style="text-align: center;">
+                <div style="border: 1px solid #000; padding: 2px; margin-bottom: 5px; font-size: 12px; font-weight: bold;">⚠️ فاتورة حجز مسبق مؤقتة</div>
+                <img src="logo.png" alt="Logo" class="restaurant-logo">
+                <h2 style="margin:5px 0; font-size: 16px;">😋 مطعم سحايب ديرتي</h2>
+                <p style="font-size: 11px; margin:0;">رقم الفاتورة: #<span id="invNum">1001</span></p>
+                <div style="border-bottom: 1px solid #000; margin: 8px 0;"></div>
+            </div>
+
+            <div class="no-print">
+                <input id="customerName" placeholder="اسم العميل" style="width:100%; padding:6px; margin-bottom:4px; border:1px solid #ccc;">
+                <input id="customerPhone" placeholder="رقم الجوال" style="width:100%; padding:6px; margin-bottom:4px; border:1px solid #ccc;">
+                <input id="customerLocation" placeholder="الموقع" style="width:100%; padding:6px; margin-bottom:4px; border:1px solid #ccc;">
+                <input id="customerTime" type="datetime-local" style="width:100%; padding:6px; margin-bottom:10px; border:1px solid #ccc;">
+            </div>
+
+            <div class="print-only" style="font-size: 10px; text-align: right; line-height: 1.4;">
+                <div id="pNameDisp"></div>
+                <div id="pPhoneDisp"></div>
+                <div id="pLocDisp"></div>
+                <div id="pTimeDisp"></div>
+            </div>
+
+            <div style="border-bottom: 1px dashed #000; margin: 8px 0;"></div>
+            <div id="cartItems"></div>
+            
+            <div style="border-top: 1px solid #000; margin-top: 10px; padding-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>التوصيل:</span>
+                    <input class="no-print" id="deliveryFee" type="number" value="5" oninput="updateCart()" style="width:40px;">
+                    <span id="pDelivery">5.00 ريال</span>
+                </div>
+                <div class="total-print" style="font-weight: bold; font-size: 16px; margin-top: 5px;">الإجمالي: <span id="totalPrice">0.00</span> ريال</div>
+            </div>
+
+            <div class="no-print" style="margin-top: 15px;">
+                <button onclick="printOrder()" style="width:100%; padding:15px; background:#27ae60; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🖨️ طباعة الفاتورة</button>
+                <button onclick="sendWhatsApp()" style="width:100%; padding:12px; background:#25D366; color:white; border:none; border-radius:10px; font-weight:bold; margin-top:8px; cursor:pointer;">📲 إرسال واتساب</button>
+                <button onclick="clearCart()" style="width:100%; padding:8px; background:#eee; border:none; border-radius:8px; margin-top:8px; color:#666; cursor:pointer;">🗑️ تفريغ السلة</button>
+            </div>
+        </div>
+    </div>
+    <script src="Script.js" defer></script>
+</body>
+</html>
