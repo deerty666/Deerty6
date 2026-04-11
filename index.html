@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POS سحايب ديرتي</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e67e22">
+
+<style>
+body {font-family:tahoma;background:#f5f5f5;margin:0;padding:10px}
+.container{display:flex;gap:10px;flex-wrap:wrap}
+.panel{background:#fff;padding:15px;border-radius:15px;flex:1;min-width:320px}
+
+.cat{background:#2c3e50;color:#fff;padding:10px;margin:5px;border-radius:10px;cursor:pointer}
+.active{background:#e67e22}
+
+.item{border:1px solid #ddd;padding:10px;margin:5px;border-radius:10px;cursor:pointer;position:relative}
+.del{position:absolute;top:5px;left:5px;background:red;color:#fff;border:none;border-radius:50%}
+
+.line{display:flex;justify-content:space-between;margin:5px 0}
+
+button{padding:8px;border:none;border-radius:8px;margin-top:5px;cursor:pointer}
+
+@media print{
+.no-print{display:none}
+#printArea{width:78mm;font-size:12px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- المنيو -->
+<div class="panel no-print">
+
+<h3>📂 الأقسام</h3>
+<div id="cats"></div>
+
+<h3>🍔 الأصناف</h3>
+<input id="search" placeholder="بحث..." onkeyup="render()">
+<div id="items"></div>
+
+<hr>
+
+<input id="catName" placeholder="قسم جديد">
+<button onclick="addCat()">+ إضافة قسم</button>
+
+<input id="itemName" placeholder="اسم الصنف">
+<input id="itemPrice" placeholder="السعر">
+<button onclick="addItem()">+ إضافة صنف</button>
+
+</div>
+
+<!-- الفاتورة -->
+<div class="panel" id="printArea">
+
+<div style="text-align:center">
+<h2>سحايب ديرتي</h2>
+<p>فاتورة رقم: <span id="inv"></span></p>
+<hr>
+</div>
+
+<div class="no-print">
+<input id="cName" placeholder="اسم العميل">
+<input id="cPhone" placeholder="رقم الجوال">
+<input id="cLoc" placeholder="الموقع">
+</div>
+
+<div id="cart"></div>
+
+<hr>
+
+<div class="line">
+<span>الإجمالي</span>
+<span id="total">0</span>
+</div>
+
+<div class="no-print">
+<button onclick="printBill()">🖨️ طباعة</button>
+<button onclick="sendWhats()">📲 واتساب</button>
+<button onclick="clearCart()">🗑️ تفريغ</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let data=JSON.parse(localStorage.getItem("menu"))||[];
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+let inv=localStorage.getItem("inv")||1001;
+let active=0;
+
+function save(){localStorage.setItem("menu",JSON.stringify(data))}
+function saveC(){localStorage.setItem("cart",JSON.stringify(cart))}
+function saveInv(){localStorage.setItem("inv",inv)}
+
+function render(){
+
+document.getElementById("inv").innerText=inv;
+
+let cats=document.getElementById("cats");
+let items=document.getElementById("items");
+let search=document.getElementById("search").value.toLowerCase();
+
+cats.innerHTML=""; items.innerHTML="";
+
+data.forEach((c,i)=>{
+cats.innerHTML+=`<div class="cat ${i==active?'active':''}" onclick="active=${i};render()">${c.name}</div>`
+})
+
+if(data[active]){
+data[active].items
+.filter(i=>i.name.toLowerCase().includes(search))
+.forEach((it,idx)=>{
+items.innerHTML+=`
+<div class="item" onclick="addCart('${it.name}',${it.price})">
+<button class="del" onclick="deleteItem(${idx});event.stopPropagation()">×</button>
+${it.name}<br>${it.price}
+</div>`
+})
+}
+
+updateCart();
+}
+
+function addCat(){
+let n=catName.value;
+if(n){data.push({name:n,items:[]});save();render()}
+}
+
+function addItem(){
+let n=itemName.value;
+let p=itemPrice.value;
+if(n&&p){data[active].items.push({name:n,price:parseFloat(p)});save();render()}
+}
+
+function deleteItem(i){
+if(confirm("حذف الصنف؟")){
+data[active].items.splice(i,1);
+save();render();
+}
+}
+
+function addCart(n,p){
+let f=cart.find(i=>i.name==n);
+if(f)f.qty++;
+else cart.push({name:n,price:p,qty:1,note:""});
+saveC();updateCart();
+}
+
+function updateCart(){
+let div=cartDiv=document.getElementById("cart");
+div.innerHTML="";
+let t=0;
+
+cart.forEach((i,index)=>{
+t+=i.price*i.qty;
+
+div.innerHTML+=`
+<div>
+<div class="line">
+<span>${i.name} × ${i.qty}</span>
+<span>${(i.price*i.qty).toFixed(2)}</span>
+</div>
+
+${i.note?`<small>📝 ${i.note}</small>`:""}
+
+<br>
+<button onclick="changeQty(${index},1)">+</button>
+<button onclick="changeQty(${index},-1)">-</button>
+<button onclick="addNote(${index})">📝</button>
+<button onclick="removeItem(${index})">❌</button>
+<hr>
+</div>`
+});
+
+total.innerText=t.toFixed(2);
+}
+
+function changeQty(i,c){
+cart[i].qty+=c;
+if(cart[i].qty<1)cart[i].qty=1;
+saveC();updateCart();
+}
+
+function removeItem(i){
+cart.splice(i,1);
+saveC();updateCart();
+}
+
+function addNote(i){
+let n=prompt("اكتب الملاحظة:");
+if(n!=null){cart[i].note=n;saveC();updateCart();}
+}
+
+function clearCart(){
+cart=[];saveC();updateCart();
+}
+
+function printBill(){
+window.print();
+inv++;
+saveInv();
+}
+
+function sendWhats(){
+
+let phone=cPhone.value.trim();
+if(!phone){alert("اكتب رقم العميل");return;}
+if(phone.startsWith("0")) phone=phone.substring(1);
+
+let msg="🧾 *سحايب ديرتي*%0A";
+msg+=`👤 ${cName.value||"عميل"}%0A`;
+msg+=`📍 ${cLoc.value||"-"}%0A----------------%0A`;
+
+cart.forEach(i=>{
+msg+=`🍔 ${i.name} × ${i.qty} = ${(i.price*i.qty).toFixed(2)} ر.س%0A`;
+if(i.note) msg+=`📝 ${i.note}%0A`;
+});
+
+msg+="----------------%0A";
+msg+=`💰 *الإجمالي: ${total.innerText} ر.س*`;
+
+window.open(`https://wa.me/966${phone}?text=${msg}`);
+}
+
+render();
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('sw.js');
+}
+
+</script>
+
+</body>
+</html>
