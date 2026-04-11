@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحايب ديرتي - POS المطور</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: #f4f6f9; margin: 0; padding: 10px; direction: rtl; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .main { display: flex; gap: 15px; flex-wrap: wrap; }
+        .panel { background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); padding: 20px; flex: 1; min-width: 300px; }
+        
+        /* شريط البحث */
+        .search-box { position: sticky; top: 0; z-index: 10; background: white; padding-bottom: 10px; }
+        .search-box input { border: 2px solid #e67e22; background: #fffcf9; border-radius: 8px; padding: 10px; width: 100%; box-sizing: border-box; }
+
+        .category-header { 
+            background: #fff3e0; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid #ffe0b2;
+        }
+        .items-container { display: none; padding: 5px 10px; border-right: 2px solid #e67e22; margin-bottom: 10px; }
+
+        h3 { margin: 0 0 10px 0; color: #222; border-bottom: 2px solid #e67e22; padding-bottom: 5px; }
+        input, select, textarea, button { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        
+        .qty-btn { background: #f39c12; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 5px; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .add-btn { background: #2980b9; padding: 5px 12px; width: auto; color: white; border-radius: 5px; cursor: pointer; border: none; }
+        .del-item-btn { background: #e74c3c; padding: 5px 10px; width: auto; font-size: 12px; color: white; border-radius: 5px; cursor: pointer; border: none; }
+        
+        /* الفاتورة */
+        .cart-item { margin: 0; padding: 8px 0; border-bottom: 1px dashed #eee; }
+        .item-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .total { font-size: 24px; font-weight: bold; color: #e67e22; text-align: center; margin-top: 10px; border-top: 2px solid #000; padding-top: 5px; }
+
+        /* 🖨️ تحديث الطباعة لمنع القص الجانبي (حل الـ 48mm) */
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; margin: 0 !important; padding: 0 !important; }
+            
+            #printArea { 
+                position: relative !important;
+                width: 48mm !important; /* تقليص العرض لضمان منطقة أمان */
+                margin: 0 auto !important; /* التوسيط في منتصف ورق الـ 80 ملم */
+                padding: 0 2mm !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            #printArea * { 
+                visibility: visible !important; 
+                text-align: center !important; /* ضمان بقاء المحتوى في المنتصف بعيداً عن المقص */
+                font-size: 9pt !important;
+            }
+
+            .item-row { 
+                display: flex !important; 
+                justify-content: space-between !important; 
+                border-bottom: 1px dashed #000; 
+                margin-bottom: 2px;
+            }
+            .total { font-size: 14pt !important; }
+            @page { size: 80mm auto; margin: 0; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main">
+        <div class="panel no-print">
+            <div class="search-box">
+                <h3>🔍 البحث في المنيو</h3>
+                <input id="searchInput" placeholder="اكتب اسم الصنف هنا..." oninput="filterMenu()">
+            </div>
+            <h3>📋 القائمة</h3>
+            <div id="menuDisplay"></div>
+            <br><hr><br>
+            <h3 style="border-bottom-color: #2c3e50;">🛠️ إدارة الأصناف</h3>
+            <input id="newCatName" placeholder="اسم القسم الجديد">
+            <button onclick="addCategory()" style="background:#2c3e50; color:white; cursor:pointer; border:none; border-radius:8px;">➕ إضافة قسم</button>
+            <hr>
+            <select id="catSelect"></select>
+            <input id="newItemName" placeholder="اسم الصنف">
+            <input id="newItemPrice" type="number" placeholder="السعر">
+            <button onclick="addItem()" style="background:#2c3e50; color:white; cursor:pointer; border:none; border-radius:8px;">🍔 إضافة صنف جديد</button>
+        </div>
+
+        <div id="printArea" class="panel">
+            <div style="text-align: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 11px; font-weight: bold;">#<span id="invNum">1001</span></span>
+                    <span style="font-size: 10px; border: 1px solid #000; padding: 1px 3px;">فاتورة حجز مؤقتة</span>
+                </div>
+                <h2 style="margin:5px 0; font-size: 18px;">مطعم سحايب ديرتي😋 🍽️</h2>
+                <div style="border-bottom: 1px dashed #000; margin: 8px 0;"></div>
+            </div>
+            
+            <h3 style="font-size: 14px;">👤 بيانات العميل</h3>
+            <div class="no-print">
+                <input id="customerName" placeholder="اسم العميل" oninput="syncPrintData()">
+                <input id="customerPhone" placeholder="رقم الجوال" oninput="syncPrintData()">
+                <input id="customerLocation" placeholder="الموقع / الحي" oninput="syncPrintData()">
+                <textarea id="customerNotes" placeholder="ملاحظات عامة..." oninput="syncPrintData()"></textarea>
+            </div>
+
+            <div class="print-only" style="text-align: right; font-size: 10px; line-height: 1.4;">
+                <div><b>العميل:</b> <span id="pName">---</span></div>
+                <div><b>الجوال:</b> <span id="pPhone">---</span></div>
+                <div><b>الموقع:</b> <span id="pLoc">---</span></div>
+                <div><b>ملاحظة:</b> <span id="pNotes">---</span></div>
+            </div>
+
+            <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
+            <h3 style="font-size: 14px;">🛒 الطلبات</h3>
+            <div id="cartItems"></div>
+
+            <div style="margin-top: 10px; border-top: 1px solid #000; padding-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                    <span>رسوم التوصيل:</span>
+                    <span id="pDelivery">5.00 ريال</span>
+                    <input class="no-print" id="deliveryFee" type="number" value="5" oninput="updateCart()" style="width:60px;">
+                </div>
+            </div>
+
+            <div class="total">الإجمالي: <span id="totalPrice">0.00</span> ريال</div>
+
+            <div class="no-print">
+                <button onclick="printOrder()" style="background:#27ae60; color:white; border:none; margin-top:10px; border-radius:8px; padding:12px; cursor:pointer; font-weight:bold;">🖨️ طباعة الفاتورة</button>
+                <button onclick="sendWhatsApp()" style="background:#25D366; color:white; border:none; border-radius:8px; padding:12px; cursor:pointer; font-weight:bold; margin-top:5px;">📲 إرسال واتساب</button>
+                <button onclick="clearCart()" style="background:#e74c3c; color:white; border:none; border-radius:8px; padding:12px; cursor:pointer; font-weight:bold; margin-top:5px;">🗑️ مسح السلة</button>
+                <button onclick="resetMenu()" style="background:#7f8c8d; color:white; font-size: 10px; border:none; border-radius:8px; cursor:pointer; margin-top:5px;">🔄 حذف المنيو بالكامل</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="Script.js" defer></script>
+</body>
+</html>
