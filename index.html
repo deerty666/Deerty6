@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحايب ديرتي - POS</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; direction: rtl; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .main { display: flex; gap: 20px; flex-wrap: wrap; }
+        .panel { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 20px; flex: 1; min-width: 350px; }
+        
+        /* نظام البحث */
+        .search-box { position: sticky; top: 0; z-index: 100; background: white; padding-bottom: 15px; border-bottom: 2px solid #eee; margin-bottom: 15px; }
+        .search-box input { border: 2px solid #e67e22; background: #fffcf9; font-size: 16px; height: 45px; }
+        
+        /* تصميم الأقسام */
+        .category-header { background: #2c3e50; color: white; padding: 12px 15px; margin: 15px 0 10px 0; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        
+        /* نظام الشبكة (Grid) للأصناف */
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding: 10px 0; }
+        
+        .item-card { 
+            background: #ffffff; border: 1px solid #e1e4e8; border-radius: 12px; padding: 15px 10px; 
+            text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; 
+            justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.04); min-height: 100px;
+        }
+        .item-card:hover { border-color: #e67e22; background: #fffcf9; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(230,126,34,0.1); }
+        .item-name { font-weight: bold; font-size: 15px; color: #2c3e50; margin-bottom: 10px; line-height: 1.4; }
+        .item-price { color: #e67e22; font-weight: 800; font-size: 14px; background: #fff3e0; padding: 3px 10px; border-radius: 20px; }
+        
+        /* أزرار الحذف والتحكم */
+        .del-mini { background: #ffeded; color: #e74c3c; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; margin-top: 8px; font-size: 12px; }
+        
+        /* الفاتورة والسلة */
+        .total { font-size: 28px; font-weight: bold; color: #e67e22; text-align: center; margin-top: 15px; border-top: 3px double #000; padding-top: 10px; }
+        .cart-item { border-bottom: 1px dashed #ddd; padding: 10px 0; }
+        
+        input, select, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ccc; border-radius: 10px; font-family: 'Cairo'; box-sizing: border-box; }
+        button { background: #e67e22; color: white; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .panel { box-shadow: none; padding: 0; border: none; }
+            #printArea { width: 80mm; padding: 5px; }
+            .print-only { display: block !important; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main">
+            <div class="panel no-print" style="flex: 1.5;">
+                <div class="search-box">
+                    <h3>🔍 البحث السريع</h3>
+                    <input id="searchInput" placeholder="ابحث عن صنف..." oninput="filterMenu()">
+                </div>
+                <h3>📋 قائمة الطعام</h3>
+                <div id="menuDisplay"></div>
+                
+                <div style="margin-top: 30px; padding: 15px; background: #eee; border-radius: 12px;">
+                    <h4>🛠️ إضافة أصناف جديدة</h4>
+                    <input id="newCatName" placeholder="اسم القسم الجديد">
+                    <button onclick="addCategory()" style="background:#34495e;">➕ إضافة قسم</button>
+                    <hr>
+                    <select id="catSelect"></select>
+                    <input id="newItemName" placeholder="اسم الصنف">
+                    <input id="newItemPrice" type="number" placeholder="السعر">
+                    <button onclick="addItem()" style="background:#34495e;">🍔 حفظ في المنيو</button>
+                </div>
+            </div>
+
+            <div id="printArea" class="panel">
+                <div style="text-align: center;">
+                    <span style="font-size: 14px; font-weight: bold;">رقم الطلب: #<span id="invNum">1001</span></span>
+                    <h2 style="margin:5px 0; color: #e67e22;">مطعم سحايب ديرتي 🍽️</h2>
+                    <p style="font-size: 15px; font-weight: bold;">هاتف: 0112020203 📞</p>
+                    <div style="border-bottom: 2px solid #000; margin: 10px 0;"></div>
+                </div>
+
+                <div class="no-print">
+                    <input id="customerName" placeholder="اسم العميل" oninput="syncPrintData()">
+                    <input id="customerPhone" placeholder="رقم الجوال" oninput="syncPrintData()">
+                    <textarea id="customerNotes" placeholder="ملاحظات (مثلاً: بدون شطة)" oninput="syncPrintData()"></textarea>
+                </div>
+
+                <table style="width:100%; font-size:14px;" class="print-only">
+                    <tr><td><b>العميل:</b> <span id="pName">---</span></td></tr>
+                    <tr><td><b>الجوال:</b> <span id="pPhone">---</span></td></tr>
+                    <tr><td><b>ملاحظة:</b> <span id="pNotes">---</span></td></tr>
+                </table>
+
+                <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
+                <h3>🛒 الطلبات</h3>
+                <div id="cartItems"></div>
+
+                <div style="margin-top: 15px; border-top: 1px solid #000; padding-top: 5px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>توصيل:</span>
+                        <span id="pDelivery">5.00 ريال</span>
+                        <input class="no-print" id="deliveryFee" type="number" value="5" oninput="updateCart()" style="width:70px;">
+                    </div>
+                </div>
+
+                <div class="total">الإجمالي: <span id="totalPrice">0.00</span> ريال</div>
+
+                <div class="no-print" style="margin-top: 20px;">
+                    <button onclick="printOrder()" style="background:#27ae60; height: 50px; margin-bottom: 10px;">🖨️ طباعة وتأكيد</button>
+                    <button onclick="sendWhatsApp()" style="background:#25D366; margin-bottom: 10px;">📲 إرسال للعميل</button>
+                    <button onclick="clearCart()" style="background:#e74c3c;">🗑️ إفراغ السلة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="Script.js" defer></script>
+</body>
+</html>
