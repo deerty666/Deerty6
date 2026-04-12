@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سحايب ديرتي POS - النسخة الشاملة</title>
+
+<style>
+/* التنسيق الأساسي */
+body { font-family: 'Tahoma', sans-serif; background: #f4f7f6; margin: 0; padding: 10px; color: #2c3e50; }
+.container { display: flex; gap: 15px; flex-wrap: wrap; }
+.panel { background: #fff; padding: 20px; border-radius: 15px; flex: 1; min-width: 350px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+/* الأقسام والأصناف */
+.cat, .item { display: inline-block; margin: 8px; border-radius: 12px; cursor: pointer; position: relative; transition: 0.3s; background: #fff; text-align: center; }
+.cat { padding: 12px 15px; background: #2c3e50; color: #fff; min-width: 100px; font-size: 14px; }
+.item { width: 120px; padding: 15px 10px; border: 1px solid #ddd; font-size: 13px; }
+.cat:hover, .item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.active { background: #e67e22; border: 2px solid #d35400; }
+
+/* أزرار الإدارة */
+.action-btns { position: absolute; top: -10px; left: -10px; display: flex; gap: 3px; }
+.action-btns button { border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.btn-del { background: #e74c3c; }
+.btn-edit { background: #27ae60; }
+
+/* تصميم الفاتورة */
+.center { text-align: center; margin-bottom: 10px; }
+.logo { width: 70px; margin-bottom: 5px; }
+.status-box { border: 2px solid #000; display: inline-block; padding: 4px 15px; margin: 8px 0; font-weight: bold; font-size: 18px; text-decoration: underline; }
+
+/* الباركود للطباعة */
+.app-banner { border-top: 1px dashed #000; margin-top: 15px; padding-top: 10px; text-align: center; }
+.app-qr { width: 120px; height: 120px; margin: 0 auto 8px; display: block; filter: grayscale(100%); }
+.app-text { font-size: 12px; font-weight: bold; color: #000; line-height: 1.4; }
+
+/* التوصيل */
+.delivery-section { background: #fdfdfd; padding: 12px; border: 1px solid #eee; border-radius: 8px; margin: 10px 0; }
+.line { display: flex; justify-content: space-between; margin: 6px 0; font-weight: bold; }
+input, select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; margin: 4px 0; }
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; }
+    .panel { box-shadow: none; border: none; width: 100%; }
+    #printArea { width: 78mm; padding: 1mm; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="panel no-print">
+        <h3>📂 إدارة المنيو</h3>
+        <div id="cats"></div>
+        <hr>
+        <h3>🍔 الأصناف المتاحة</h3>
+        <div id="items"></div>
+        <hr>
+        <div style="background:#fefefe; padding:12px; border:1px solid #eee; border-radius:10px;">
+            <h4>إضافة بيانات:</h4>
+            <input id="catName" placeholder="اسم القسم الجديد">
+            <button onclick="addCat()">➕ قسم جديد</button>
+            <br><br>
+            <select id="catSelect"></select>
+            <input id="itemName" placeholder="اسم الصنف">
+            <input id="itemPrice" type="number" placeholder="السعر">
+            <button onclick="addItem()">➕ صنف جديد</button>
+            <hr>
+            <h4>إعدادات الباركود والرابط:</h4>
+            <input id="appQrUrl" placeholder="ضع رابط التطبيق هنا" style="width: 85%;">
+            <button onclick="updateAppQr()" style="background:#e67e22; color:white; margin-top:5px;">💾 حفظ الإعدادات</button>
+        </div>
+    </div>
+
+    <div class="panel" id="printArea">
+        <div class="center">
+            <img src="logo.png" class="logo" alt="Logo">
+            <div class="status-box">فاتورة حجز مؤقتة</div>
+            <h2 style="margin: 5px 0;">سحايب ديرتي</h2>
+            <p style="margin: 2px 0;">رقم الفاتورة: <span id="inv">1001</span></p>
+            <p style="margin: 2px 0;">📞 0112020203</p>
+            <hr>
+        </div>
+
+        <div class="no-print">
+            <input id="cName" placeholder="اسم العميل" style="width:90%">
+            <input id="cPhone" placeholder="رقم الجوال (05xxxxxxxx)" style="width:90%">
+            <div class="delivery-section">
+                <strong>📍 خيارات الطلب:</strong><br>
+                <input type="radio" name="dType" id="takeaway" value="استلام" checked onclick="toggleDelivery(false)">
+                <label for="takeaway">🏠 استلام</label>
+                <input type="radio" name="dType" id="delivery" value="توصيل" onclick="toggleDelivery(true)">
+                <label for="delivery">🚗 توصيل</label>
+                <div id="deliveryInput" style="display:none; margin-top:8px;">
+                    <input id="deliveryFee" type="number" value="0" onchange="updateCart()" style="width:50px"> ر.س (توصيل)
+                    <input id="cLoc" placeholder="أدخل العنوان بدقة" style="width:90%">
+                </div>
+            </div>
+        </div>
+
+        <div id="cart"></div>
+        <hr>
+
+        <div class="line" style="font-size:1.1em; border-top:1px solid #000; padding-top:5px;">
+            <span>الإجمالي النهائي:</span>
+            <span id="totalDisplay">0.00</span>
+        </div>
+
+        <div class="app-banner">
+            <img id="appQrImg" src="" class="app-qr">
+            <div class="app-text">
+                حمل تطبيق "سحايب ديرتي" 📲<br>
+                فعل التنبيهات واطلب الآن لعروض حصرية! 🎁
+            </div>
+        </div>
+
+        <div class="center no-print" style="margin-top:15px; display:flex; gap:8px; justify-content:center;">
+            <button onclick="printInvoice()" style="background:#34495e; color:white; padding:10px;">🖨️ طباعة</button>
+            <button onclick="sendWhats()" style="background:#27ae60; color:white; padding:10px;">📲 واتساب</button>
+            <button onclick="clearCart()" style="background:#95a5a6; color:white; padding:10px;">🗑️ جديد</button>
+        </div>
+        <div class="center" style="margin-top:10px; font-size:12px;">💙 شكراً لزيارتكم 💙</div>
+    </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("menu")) || [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let activeCat = 0;
+let inv = parseInt(localStorage.getItem("inv")) || 1001;
+let appQrUrl = localStorage.getItem("appQrUrl") || "https://google.com";
+
+function save(){ localStorage.setItem("menu", JSON.stringify(data)); }
+function saveCart(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+
+function render(){
+    document.getElementById("inv").innerText = inv;
+    let catsDiv = document.getElementById("cats");
+    let select = document.getElementById("catSelect");
+    catsDiv.innerHTML = ""; select.innerHTML = "";
+    data.forEach((c, i) => {
+        catsDiv.innerHTML += `<div class="cat ${i===activeCat?'active':''}" onclick="openCat(${i})"><div class="action-btns"><button class="btn-edit" onclick="editCat(${i});event.stopPropagation()">✎</button><button class="btn-del" onclick="deleteCat(${i});event.stopPropagation()">×</button></div>${c.name}</div>`;
+        select.innerHTML += `<option value="${i}">${c.name}</option>`;
+    });
+    document.getElementById("appQrUrl").value = appQrUrl;
+    document.getElementById("appQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appQrUrl)}`;
+    showItems();
+    updateCart();
+}
+
+function printInvoice() {
+    window.print();
+    inv++;
+    localStorage.setItem("inv", inv);
+    document.getElementById("inv").innerText = inv;
+}
+
+function updateAppQr() {
+    appQrUrl = document.getElementById("appQrUrl").value;
+    localStorage.setItem("appQrUrl", appQrUrl);
+    render();
+}
+
+function openCat(i){ activeCat = i; render(); }
+function showItems(){
+    let itemsDiv = document.getElementById("items");
+    itemsDiv.innerHTML = "";
+    if(!data[activeCat]) return;
+    data[activeCat].items.forEach((it, idx) => {
+        itemsDiv.innerHTML += `<div class="item" onclick="addCart('${it.name}', ${it.price})"><div class="action-btns"><button class="btn-edit" onclick="editItem(${idx});event.stopPropagation()">✎</button><button class="btn-del" onclick="deleteItem(${idx});event.stopPropagation()">×</button></div><strong>${it.name}</strong><br>${it.price} ر.س</div>`;
+    });
+}
+
+function addCat(){ let n = catName.value; if(n){ data.push({name:n, items:[]}); save(); render(); catName.value=""; }}
+function editCat(i){ let n = prompt("الاسم الجديد:", data[i].name); if(n){ data[i].name=n; save(); render(); }}
+function deleteCat(i){ if(confirm("حذف القسم؟")){ data.splice(i,1); activeCat=0; save(); render(); }}
+
+function addItem(){ 
+    let c = catSelect.value, n = itemName.value, p = itemPrice.value;
+    if(n && p){ data[c].items.push({name:n, price:parseFloat(p)}); save(); render(); itemName.value=""; itemPrice.value=""; }
+}
+function editItem(i){
+    let it = data[activeCat].items[i];
+    let n = prompt("الاسم:", it.name), p = prompt("السعر:", it.price);
+    if(n && p){ data[activeCat].items[i] = {name:n, price:parseFloat(p)}; save(); render(); }
+}
+function deleteItem(i){ if(confirm("حذف الصنف؟")){ data[activeCat].items.splice(i,1); save(); render(); } }
+
+function addCart(name, price){
+    let f = cart.find(i=>i.name===name);
+    if(f) f.qty++; else cart.push({name, price, qty:1, note:""});
+    saveCart(); updateCart();
+}
+
+function toggleDelivery(show) {
+    document.getElementById("deliveryInput").style.display = show ? "block" : "none";
+    updateCart();
+}
+
+function updateCart(){
+    let div = document.getElementById("cart");
+    div.innerHTML = "";
+    let total = 0;
+    cart.forEach((it, idx) => {
+        total += it.price * it.qty;
+        div.innerHTML += `
+            <div class="line"><span>${it.name} × ${it.qty}</span><span>${(it.price*it.qty).toFixed(2)}</span></div>
+            <div class="no-print" style="margin-bottom:8px">
+                <button onclick="addNote(${idx})" style="font-size:11px">📝 ملاحظة</button>
+                <button onclick="changeQty(${idx},1)">+</button>
+                <button onclick="changeQty(${idx},-1)">-</button>
+                <button onclick="removeItem(${idx})">❌</button>
+            </div>`;
+    });
+    if(document.getElementById("delivery").checked) total += parseFloat(document.getElementById("deliveryFee").value) || 0;
+    document.getElementById("totalDisplay").innerText = total.toFixed(2);
+}
+
+function addNote(i){ let n = prompt("ملاحظة الطلب:", cart[i].note); if(n!==null) cart[i].note = n; saveCart(); updateCart(); }
+function changeQty(i, c){ cart[i].qty += c; if(cart[i].qty<1) cart[i].qty=1; saveCart(); updateCart(); }
+function removeItem(i){ cart.splice(i,1); saveCart(); updateCart(); }
+function clearCart(){ if(confirm("بدء طلب جديد؟")){ cart=[]; saveCart(); updateCart(); }}
+
+// دالة الواتساب الشاملة مع الرابط في النهاية
+function sendWhats(){
+    let phone = cPhone.value.trim();
+    if(!phone){ alert("سجل رقم جوال العميل أولاً!"); return; }
+    if(phone.startsWith("0")) phone = phone.substring(1);
+
+    let isDelivery = document.getElementById("delivery").checked;
+    let type = isDelivery ? "توصيل" : "استلام";
+    
+    let msg = `🧾 *سحايب ديرتي - فاتورة حجز*%0A`;
+    msg += `👤 العميل: ${cName.value || "ضيف"}%0A`;
+    msg += `📍 نوع الطلب: ${type}%0A`;
+    msg += `----------------%0A`;
+
+    cart.forEach(it => {
+        msg += `• *${it.name}*%0A`;
+        msg += `العدد: ${it.qty} | السعر: ${(it.price*it.qty).toFixed(2)} ر.س%0A`;
+        if(it.note) msg += `📝 ملاحظة: ${it.note}%0A`;
+    });
+
+    if(isDelivery) {
+        let fee = document.getElementById("deliveryFee").value;
+        msg += `🚗 رسوم التوصيل: ${fee} ر.س%0A`;
+        msg += `📍 العنوان: ${cLoc.value || "لم يحدد"}%0A`;
+    }
+
+    msg += `----------------%0A`;
+    msg += `💰 *الإجمالي النهائي: ${document.getElementById("totalDisplay").innerText} ر.س*%0A`;
+    msg += `شكراً لتعاملكم معنا 💙%0A%0A`;
+    
+    // الجزء المطلوب: دعوة التثبيت والرابط
+    msg += `📲 *لطلب أسرع في المرات القادمة، حمل تطبيقنا من هنا:*%0A`;
+    msg += `${appQrUrl}`;
+
+    window.open(`https://wa.me/966${phone}?text=${msg}`);
+}
+
+render();
+</script>
+</body>
+</html>
