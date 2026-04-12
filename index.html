@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سحايب ديرتي POS - الإصدار الشامل</title>
+
+<style>
+/* التنسيق الأساسي للشاشة */
+body { font-family: 'Arial', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; direction: rtl; }
+.container { display: flex; gap: 15px; flex-wrap: wrap; }
+.panel { background: #fff; padding: 20px; border-radius: 12px; flex: 1; min-width: 320px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+/* الأقسام والأصناف في الإدارة */
+.cat-container, .item-container { display: inline-flex; align-items: center; margin: 5px; background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.cat, .item { padding: 10px; cursor: pointer; text-align: center; }
+.cat { background: #2c3e50; color: #fff; min-width: 80px; }
+.item { width: 100px; font-size: 13px; }
+.edit-btn { background: #f39c12; color: white; border: none; padding: 10px 5px; cursor: pointer; font-size: 12px; }
+.active { background: #e67e22 !important; color: white; }
+
+/* الفاتورة */
+#printArea { text-align: center; }
+.status-box { border: 2px solid #000; display: inline-block; padding: 5px 15px; margin: 10px 0; font-weight: bold; font-size: 18px; }
+.line { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 8px 0; font-weight: bold; }
+.dots { flex-grow: 0; border-bottom: 2px dotted #000; width: 30px; margin-bottom: 5px; }
+
+/* إعدادات الطباعة 80mm */
+@media print {
+    @page { size: 80mm auto; margin: 0; }
+    .no-print { display: none !important; }
+    body { background: white; margin: 0; padding: 0; width: 80mm; color: #000; font-size: 12px; }
+    #printArea { width: 74mm !important; margin: 0 auto !important; padding: 5px !important; text-align: center !important; }
+    .logo { width: 110px !important; margin: 0 auto 10px !important; display: block !important; }
+    .line { justify-content: center !important; font-size: 14px !important; gap: 5px !important; }
+    .dots { display: inline-block !important; width: 25px !important; border-bottom: 1px dotted #000 !important; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="panel no-print">
+        <h3>📂 إدارة القائمة (الأقسام)</h3>
+        <div id="cats"></div>
+        <hr>
+        <h3>🍴 الأصناف</h3>
+        <div id="items"></div>
+        <hr>
+        <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
+            <h4>إضافة جديد</h4>
+            <input id="catName" placeholder="قسم جديد"> <button onclick="addCat()">➕ قسم</button>
+            <br><br>
+            <select id="catSelect"></select>
+            <input id="itemName" placeholder="صنف"> <input id="itemPrice" type="number" placeholder="سعر" style="width:60px">
+            <button onclick="addItem()">➕ صنف</button>
+            <hr>
+            <input id="appQrUrl" placeholder="رابط التطبيق" style="width:70%">
+            <button onclick="updateAppQr()">💾 حفظ الرابط</button>
+        </div>
+    </div>
+
+    <div class="panel" id="printArea">
+        <div class="center-all">
+            <img src="logo.png" class="logo" alt="Logo" style="width: 100px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">
+            <div class="status-box">فاتورة حجز مؤقتة</div>
+            <h2 style="margin: 5px 0;">سحايب ديرتي</h2>
+            <p style="margin: 2px 0;">رقم الفاتورة: <span id="inv">1013</span></p>
+            <hr style="width: 100%; border: 0; border-top: 1px solid #000;">
+        </div>
+
+        <div class="no-print">
+            <input id="cPhone" placeholder="جوال العميل" style="width:95%; margin-bottom: 10px;">
+        </div>
+
+        <div id="cart"></div>
+        
+        <hr style="width: 100%; border: 0; border-top: 1px solid #000;">
+        <div class="line" style="font-size: 1.2em;">
+            <span>الإجمالي:</span>
+            <span class="dots"></span>
+            <span id="totalDisplay">0.00</span>
+        </div>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <img id="appQrImg" src="" style="width:120px; display: block; margin: 0 auto;">
+            <p style="font-size: 12px; font-weight: bold; margin: 5px 0;">شكراً لزيارتكم 💙</p>
+        </div>
+
+        <div class="no-print" style="margin-top:20px; display: flex; justify-content: center; gap: 10px;">
+            <button onclick="printInvoice()" style="background:#2c3e50; color:#fff; padding:10px 15px; border-radius: 5px;">🖨️ طباعة</button>
+            <button onclick="clearCart()" style="background:#95a5a6; color:#fff; padding:10px 15px; border-radius: 5px;">🗑️ جديد</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("menu")) || [{name: "المشويات", items: []}];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let inv = parseInt(localStorage.getItem("inv")) || 1013;
+let appQrUrl = localStorage.getItem("appQrUrl") || "https://google.com";
+let activeCat = 0;
+
+function save(){ localStorage.setItem("menu", JSON.stringify(data)); }
+function saveCart(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+
+function render(){
+    document.getElementById("inv").innerText = inv;
+    let catsDiv = document.getElementById("cats");
+    let select = document.getElementById("catSelect");
+    catsDiv.innerHTML = ""; select.innerHTML = "";
+    
+    data.forEach((c, i) => {
+        catsDiv.innerHTML += `
+            <div class="cat-container">
+                <div class="cat ${i===activeCat?'active':''}" onclick="activeCat=${i};render()">${c.name}</div>
+                <button class="edit-btn no-print" onclick="editCat(${i})">📝</button>
+            </div>`;
+        select.innerHTML += `<option value="${i}">${c.name}</option>`;
+    });
+    document.getElementById("appQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appQrUrl)}`;
+    showItems();
+    updateCart();
+}
+
+function showItems(){
+    let div = document.getElementById("items"); div.innerHTML = "";
+    if(!data[activeCat]) return;
+    data[activeCat].items.forEach((it, idx) => {
+        div.innerHTML += `
+            <div class="item-container">
+                <div class="item" onclick="addCart('${it.name}', ${it.price})">${it.name}<br>${it.price} ر.س</div>
+                <button class="edit-btn no-print" onclick="editItem(${activeCat}, ${idx})">📝</button>
+            </div>`;
+    });
+}
+
+function editCat(i){
+    let n = prompt("اسم القسم الجديد:", data[i].name);
+    if(n){ data[i].name = n; save(); render(); }
+}
+
+function editItem(cIdx, iIdx){
+    let it = data[cIdx].items[iIdx];
+    let n = prompt("اسم الصنف الجديد:", it.name);
+    let p = prompt("السعر الجديد:", it.price);
+    if(n && p){ data[cIdx].items[iIdx] = {name: n, price: parseFloat(p)}; save(); render(); }
+}
+
+function addCat(){ let n = catName.value; if(n){ data.push({name:n, items:[]}); save(); render(); catName.value=""; }}
+function addItem(){ 
+    let c = catSelect.value, n = itemName.value, p = itemPrice.value;
+    if(n && p){ data[c].items.push({name:n, price:parseFloat(p)}); save(); render(); itemName.value=""; itemPrice.value=""; }
+}
+
+function addCart(name, price){
+    let f = cart.find(i=>i.name===name);
+    if(f) f.qty++; else cart.push({name, price, qty:1});
+    saveCart(); updateCart();
+}
+
+function updateCart(){
+    let div = document.getElementById("cart"); div.innerHTML = "";
+    let total = 0;
+    cart.forEach((it, idx) => {
+        total += it.price * it.qty;
+        div.innerHTML += `
+            <div class="line">
+                <span>${it.name} x${it.qty}</span>
+                <span class="dots"></span>
+                <span>${(it.price*it.qty).toFixed(2)}</span>
+            </div>`;
+    });
+    document.getElementById("totalDisplay").innerText = total.toFixed(2);
+}
+
+function clearCart(){ cart=[]; saveCart(); updateCart(); }
+function updateAppQr(){ appQrUrl = document.getElementById("appQrUrl").value; localStorage.setItem("appQrUrl", appQrUrl); render(); }
+function printInvoice() { window.print(); inv++; localStorage.setItem("inv", inv); render(); }
+
+render();
+</script>
+</body>
+</html>
