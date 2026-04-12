@@ -142,8 +142,8 @@ function showItems(){
 }
 
 function addCart(name, price){
-    let f = cart.find(i=>i.name===name);
-    if(f) f.qty++; else cart.push({name, price, qty:1, note:""});
+cart.push({name, price, qty: 1, note: ""});
+
     saveCart(); updateCart();
 }
 
