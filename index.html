@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سحايب ديرتي POS - النسخة المطورة</title>
+
+<style>
+body{ font-family:tahoma; background:#f0f2f5; margin:0; padding:10px; }
+.container{ display:flex; gap:15px; flex-wrap:wrap; }
+.panel{ background:#fff; padding:20px; border-radius:15px; flex:1; min-width:350px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+/* ترتيب الأزرار الجديد */
+.cat{ display:inline-block; padding:15px 10px; margin:8px; background:#2c3e50; color:#fff; border-radius:12px; cursor:pointer; min-width:110px; text-align:center; font-size:14px; position:relative; transition: 0.3s; }
+.cat:hover{ transform: translateY(-2px); }
+
+/* حاوية الأزرار لمنع الخطأ */
+.action-btns { position:absolute; top:-10px; left:-10px; display:flex; gap:5px; opacity: 0.8; }
+.action-btns button { border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; color:#fff; font-size:12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+.btn-del{ background:#e74c3c; }
+.btn-edit{ background:#27ae60; }
+.active{ background:#e67e22; border: 2px solid #d35400; }
+
+.item{ display:inline-block; width:130px; padding:15px 10px; margin:8px; border-radius:12px; border:1px solid #ddd; cursor:pointer; position:relative; text-align:center; font-size:14px; background: #fff; }
+
+/* قسم التوصيل */
+.delivery-section { background: #ecf0f1; padding: 10px; border-radius: 10px; margin: 10px 0; border: 1px solid #bdc3c7; }
+.delivery-options { display: flex; gap: 10px; margin-bottom: 10px; }
+.delivery-options label { cursor: pointer; font-weight: bold; }
+
+.line{ display:flex; justify-content:space-between; margin:8px 0; font-weight: bold; }
+hr{ border: 0; border-top: 1px dashed #ccc; margin: 10px 0; }
+
+@media print{
+.no-print{ display:none }
+#printArea{ width:78mm; padding:5mm; font-size:12px; }
+.logo{ width:60px; margin:auto; display:block; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="panel no-print">
+<h3>📂 الأقسام (اضغط ✎ للتعديل)</h3>
+<div id="cats"></div>
+
+<h3>🍔 الأصناف</h3>
+<div id="items"></div>
+
+<hr>
+<div style="background:#f9f9f9; padding:10px; border-radius:10px;">
+    <input id="catName" placeholder="اسم القسم الجديد">
+    <button onclick="addCat()">➕ إضافة قسم</button>
+    <br><br>
+    <select id="catSelect"></select>
+    <input id="itemName" placeholder="اسم الصنف">
+    <input id="itemPrice" type="number" placeholder="السعر">
+    <button onclick="addItem()">➕ إضافة صنف</button>
+</div>
+</div>
+
+<div class="panel" id="printArea">
+<div class="center" style="text-align:center">
+<h2>سحايب ديرتي</h2>
+<p>📞 0112020203</p>
+<p>رقم الفاتورة: <span id="inv">1001</span></p>
+<hr>
+</div>
+
+<div class="no-print">
+    <input id="cName" placeholder="اسم العميل" style="width:90%; padding:5px; margin:5px;">
+    <input id="cPhone" placeholder="رقم الجوال" style="width:90%; padding:5px; margin:5px;">
+    
+    <div class="delivery-section">
+        <p style="margin-top:0;">📍 نوع الطلب:</p>
+        <div class="delivery-options">
+            <input type="radio" name="dType" id="takeaway" value="استلام" checked onclick="toggleDelivery(false)">
+            <label for="takeaway">🏠 استلام من الفرع</label>
+            <input type="radio" name="dType" id="delivery" value="توصيل" onclick="toggleDelivery(true)">
+            <label for="delivery">🚗 توصيل</label>
+        </div>
+        <div id="deliveryInput" style="display:none">
+            <input id="deliveryFee" type="number" value="0" step="1" onchange="updateCart()" style="width:60px">
+            <span>رسوم التوصيل (ر.س)</span>
+            <input id="cLoc" placeholder="عنوان التوصيل" style="width:90%; padding:5px; margin-top:5px;">
+        </div>
+    </div>
+</div>
+
+<div id="cart"></div>
+<hr>
+
+<div id="billSummary">
+    <div class="line" id="deliveryLine" style="display:none; color: #7f8c8d;">
+        <span>رسوم التوصيل</span>
+        <span id="dFeeVal">0.00</span>
+    </div>
+    <div class="line" style="font-size:1.2em; color:#2c3e50;">
+        <span>الإجمالي النهائي</span>
+        <span id="totalDisplay">0.00</span>
+    </div>
+</div>
+
+<div class="no-print" style="margin-top:20px">
+<button onclick="window.print()" style="background:#34495e; color:white; padding:10px;">🖨️ طباعة</button>
+<button onclick="sendWhats()" style="background:#27ae60; color:white; padding:10px;">📲 واتساب</button>
+<button onclick="clearCart()" style="background:#95a5a6; color:white; padding:10px;">🗑️ جديد</button>
+</div>
+</div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("menu")) || [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let activeCat = 0;
+let inv = localStorage.getItem("inv") || 1001;
+
+function save(){ localStorage.setItem("menu", JSON.stringify(data)); }
+function saveCart(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+
+function render(){
+    document.getElementById("inv").innerText = inv;
+    let catsDiv = document.getElementById("cats");
+    let select = document.getElementById("catSelect");
+    catsDiv.innerHTML = ""; select.innerHTML = "";
+
+    data.forEach((c, i) => {
+        catsDiv.innerHTML += `
+        <div class="cat ${i === activeCat ? 'active' : ''}" onclick="openCat(${i})">
+            <div class="action-btns">
+                <button class="btn-edit" onclick="editCat(${i});event.stopPropagation()">✎</button>
+                <button class="btn-del" onclick="deleteCat(${i});event.stopPropagation()">×</button>
+            </div>
+            ${c.name}
+        </div>`;
+        select.innerHTML += `<option value="${i}">${c.name}</option>`;
+    });
+    showItems();
+    updateCart();
+}
+
+function showItems(){
+    let itemsDiv = document.getElementById("items");
+    itemsDiv.innerHTML = "";
+    if(!data[activeCat]) return;
+
+    data[activeCat].items.forEach((it, idx) => {
+        itemsDiv.innerHTML += `
+        <div class="item" onclick="addCart('${it.name}', ${it.price})">
+            <div class="action-btns">
+                <button class="btn-edit" onclick="editItem(${idx});event.stopPropagation()">✎</button>
+                <button class="btn-del" onclick="deleteItem(${idx});event.stopPropagation()">×</button>
+            </div>
+            <strong>${it.name}</strong><br>${it.price} ر.س
+        </div>`;
+    });
+}
+
+function toggleDelivery(show) {
+    document.getElementById("deliveryInput").style.display = show ? "block" : "none";
+    document.getElementById("deliveryLine").style.display = show ? "flex" : "none";
+    updateCart();
+}
+
+function updateCart(){
+    let div = document.getElementById("cart");
+    div.innerHTML = "";
+    let subTotal = 0;
+    
+    cart.forEach((i, index) => {
+        subTotal += i.price * i.qty;
+        div.innerHTML += `
+        <div class="line">
+            <span>${i.name} × ${i.qty}</span>
+            <span>${(i.price * i.qty).toFixed(2)}</span>
+        </div>
+        <div class="no-print" style="margin-bottom:10px">
+            <button onclick="changeQty(${index}, 1)">+</button>
+            <button onclick="changeQty(${index}, -1)">-</button>
+            <button onclick="addNote(${index})">📝</button>
+            <button onclick="removeItem(${index})">❌</button>
+        </div>`;
+    });
+
+    let dFee = 0;
+    if(document.getElementById("delivery").checked) {
+        dFee = parseFloat(document.getElementById("deliveryFee").value) || 0;
+    }
+    
+    document.getElementById("dFeeVal").innerText = dFee.toFixed(2);
+    document.getElementById("totalDisplay").innerText = (subTotal + dFee).toFixed(2);
+}
+
+// الدوال المساعدة (إضافة/حذف/تعديل)
+function openCat(i){ activeCat = i; render(); }
+function addCat(){ let n = catName.value; if(n){ data.push({name:n, items:[]}); save(); render(); catName.value=""; }}
+function editCat(i){ let n = prompt("اسم القسم:", data[i].name); if(n){ data[i].name=n; save(); render(); }}
+function deleteCat(i){ if(confirm("حذف؟")){ data.splice(i,1); activeCat=0; save(); render(); }}
+function addItem(){ 
+    let c = catSelect.value, n = itemName.value, p = itemPrice.value;
+    if(n && p){ data[c].items.push({name:n, price:parseFloat(p)}); save(); render(); itemName.value=""; itemPrice.value=""; }
+}
+function editItem(i){
+    let it = data[activeCat].items[i];
+    let n = prompt("الاسم:", it.name), p = prompt("السعر:", it.price);
+    if(n && p){ data[activeCat].items[i] = {name:n, price:parseFloat(p)}; save(); render(); }
+}
+function deleteItem(i){ if(confirm("حذف؟")){ data[activeCat].items.splice(i,1); save(); render(); }}
+function addCart(name, price){
+    let f = cart.find(i=>i.name===name);
+    if(f) f.qty++; else cart.push({name, price, qty:1, note:""});
+    saveCart(); updateCart();
+}
+function changeQty(i, c){ cart[i].qty += c; if(cart[i].qty<1) cart[i].qty=1; saveCart(); updateCart(); }
+function removeItem(i){ cart.splice(i,1); saveCart(); updateCart(); }
+function addNote(i){ let n = prompt("ملاحظة:", cart[i].note); if(n!==null){ cart[i].note=n; saveCart(); updateCart(); }}
+function clearCart(){ if(confirm("جديد؟")){ cart=[]; saveCart(); updateCart(); }}
+
+function sendWhats(){
+    let phone = cPhone.value.trim();
+    if(!phone){ alert("رقم العميل!"); return; }
+    if(phone.startsWith("0")) phone = phone.substring(1);
+
+    let type = document.querySelector('input[name="dType"]:checked').value;
+    let msg = `🧾 *سحايب ديرتي* - ${type}%0A`;
+    msg += `👤 العميل: ${cName.value || "غير مسجل"}%0A----------------%0A`;
+
+    cart.forEach(i => {
+        msg += `• ${i.name} × ${i.qty} = ${(i.price*i.qty).toFixed(2)}%0A`;
+        if(i.note) msg += `  📝 ${i.note}%0A`;
+    });
+
+    if(type === "توصيل") {
+        let fee = document.getElementById("deliveryFee").value;
+        msg += `🚗 رسوم التوصيل: ${fee} ر.س%0A`;
+        msg += `📍 الموقع: ${cLoc.value || "-"}%0A`;
+    }
+
+    msg += `💰 *الإجمالي: ${document.getElementById("totalDisplay").innerText} ر.س*`;
+    window.open(`https://wa.me/966${phone}?text=${msg}`);
+}
+
+render();
+</script>
+</body>
+</html>
