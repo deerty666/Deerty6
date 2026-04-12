@@ -25,30 +25,46 @@ body { font-family: 'Arial', sans-serif; background: #f0f2f5; margin: 0; padding
 
 /* إعدادات الطباعة الاحترافية */
 @media print {
+    /* ضبط حجم الورق وإلغاء الهوامش الافتراضية للمتصفح */
     @page { 
         size: 80mm auto; 
         margin: 0; 
     }
+    
+    .no-print { display: none !important; }
 
     body { 
-        margin: 0 !important;
-        padding: 0 !important;
-        direction: rtl;
-        font-size: 12px; /* تصغير بسيط يمنع القص */
+        background: white; 
+        margin: 0; 
+        padding: 0; 
+        width: 80mm; 
+        color: #000;
+        direction: rtl; /* لضمان البدء من اليمين */
+        font-size: 11px; /* تصغير الخط العام لمنع القص */
     }
-
-    .no-print { 
-        display: none !important; 
-    }
-
+    
     #printArea { 
-        width: 72mm !important; /* أهم تعديل 👈 */
-        max-width: 72mm !important;
-        margin: 0 auto !important;
-        padding: 3px !important;
+        width: 72mm !important; /* تقليل العرض لترك مساحة أمان */
+        margin: 0 auto !important; /* توسيط الفاتورة في الورقة */
+        padding: 5px !important;
         box-shadow: none !important;
-        overflow: hidden !important;
+        text-align: center; 
     }
+
+    /* تكبير وتوسيط الشعار */
+    .logo { 
+        width: 120px !important; 
+        margin: 0 auto 10px !important; 
+        display: block; 
+    }
+
+    /* ضمان توسيط النصوص والعناوين */
+    .center { 
+        width: 100%; 
+        text-align: center; 
+    }
+}
+
 
     .logo { 
         width: 80px !important; 
