@@ -238,6 +238,18 @@ function sendWhats(){
 function printInvoice(){ window.print(); inv++; localStorage.setItem("inv", inv); render(); }
 function addCat(){ let n = catName.value; if(n){ data.push({name:n, items:[]}); save(); render(); catName.value=""; }}
 function addItem(){ let c = catSelect.value, n = itemName.value, p = itemPrice.value; if(n && p){ data[c].items.push({name:n, price:parseFloat(p)}); save(); render(); itemName.value=""; itemPrice.value=""; }}
+function deleteItemFromMenu(index) {
+    if (confirm("هل أنت متأكد من حذف هذا الصنف نهائياً؟")) {
+        // حذف الصنف من القائمة بناءً على القسم المفتوح
+        data[activeCat].items.splice(index, 1);
+        
+        // حفظ البيانات لكي لا يعود الصنف بعد تحديث الصفحة
+        save();
+        
+        // تحديث الشاشة فوراً
+        render();
+    }
+}
 
 render();
 </script>
