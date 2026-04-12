@@ -137,7 +137,11 @@ function showItems(){
     let div = document.getElementById("items"); div.innerHTML = "";
     if(!data[activeCat]) return;
     data[activeCat].items.forEach((it, idx) => {
-        div.innerHTML += `<div class="item-container"><div class="item" onclick="addCart('${it.name}', ${it.price})">${it.name}<br>${it.price} ر.س</div><button class="edit-btn" onclick="editItem(${activeCat}, ${idx})">📝</button></div>`;
+        div.innerHTML += `<div class="item-container">
+    <div class="item" onclick="addCart('${it.name}', ${it.price})">${it.name}<br>${it.price} ر.س</div>
+    <button class="edit-btn" onclick="editItem(${activeCat}, ${idx})">📝</button>
+    <button class="delete-btn" onclick="deleteItemFromMenu(${idx})" style="background: #e74c3c; border: none; cursor: pointer; border-radius: 5px; margin-right: 5px;">🗑️</button>
+</div>`;
     });
 }
 
