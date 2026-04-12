@@ -27,7 +27,13 @@ body { font-family: 'Arial', sans-serif; background: #f0f2f5; margin: 0; padding
 @media print {
     @page { size: 80mm auto; margin: 0; }
     .no-print { display: none !important; }
-    body { background: white; margin: 0; padding: 0; width: 80mm; color: #000; }
+body { 
+    background: white; 
+    margin: 0; 
+    padding: 0; 
+    direction: rtl; /* أضف هذا السطر لضمان المحاذاة من اليمين */
+}
+
     
     #printArea { 
         width: 76mm !important; 
