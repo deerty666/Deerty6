@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سحايب ديرتي POS - نسخة الأوفلاين والسريعة</title>
+
+<style>
+/* 1. تنسيق الشاشة والإدارة */
+body { font-family: 'Arial', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; direction: rtl; }
+.container { display: flex; gap: 15px; flex-wrap: wrap; }
+.panel { background: #fff; padding: 20px; border-radius: 12px; flex: 1; min-width: 320px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+/* الأقسام والأصناف في لوحة التحكم */
+.cat-container, .item-container { display: inline-flex; align-items: center; margin: 5px; background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.cat, .item { padding: 10px; cursor: pointer; text-align: center; }
+.cat { background: #2c3e50; color: #fff; min-width: 80px; }
+.item { width: 100px; font-size: 13px; }
+.edit-btn { background: #f39c12; color: white; border: none; padding: 10px 5px; cursor: pointer; }
+.active { background: #e67e22 !important; }
+
+/* تنسيق السلة والأزرار */
+.line { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 5px 0; font-weight: bold; }
+.dots { flex-grow: 0; border-bottom: 2px dotted #000; width: 25px; height: 12px; }
+.qty-btn { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-weight: bold; margin: 0 5px; }
+.qty-btn:hover { background: #ddd; }
+.note-line { font-size: 12px; color: #d35400; text-align: center; margin-bottom: 8px; font-weight: bold; }
+
+/* 2. إعدادات الطباعة 80mm */
+@media print {
+    @page { size: 80mm auto; margin: 0; }
+    .no-print { display: none !important; }
+    body { background: white; margin: 0; padding: 0; width: 80mm; color: #000; }
+    #printArea { width: 74mm !important; margin: 0 auto !important; padding: 5px !important; text-align: center !important; }
+    .logo { width: 110px !important; margin: 0 auto 10px !important; display: block !important; }
+    .line { justify-content: center !important; font-size: 14px !important; gap: 5px !important; }
+    .dots { display: inline-block !important; border-bottom: 1px dotted #000 !important; width: 25px !important; }
+    #qrArea { display: block !important; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="panel no-print">
+        <h3>📂 إدارة القائمة (أوفلاين)</h3>
+        <div id="cats"></div>
+        <hr>
+        <div id="items"></div>
+        <hr>
+        <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
+            <h4>إضافة وإدارة</h4>
+            <input id="catName" placeholder="قسم جديد"> <button onclick="addCat()">➕ قسم</button>
+            <br><br>
+            <select id="catSelect"></select>
+            <input id="itemName" placeholder="صنف"> <input id="itemPrice" type="number" placeholder="سعر" style="width:60px">
+            <button onclick="addItem()">➕ صنف</button>
+        </div>
+    </div>
+
+    <div class="panel" id="printArea">
+        <div class="center-header">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAgXSURBVHja7Z1dbBTHGcf/Mzu7tje2bYwNmAtO47SppSAtIuAnByRCIvXSpEqkqkoRUhSpxAtS9bXqpV5UvVTqC1Krl5Y+VbSWRi1VbYmEIn5II44TUps4iXEMwZfENvbu7OzM9IK9mF8be727M7M7M/P/v+D4wN9p9p2Z552Z3ZkDNE3T0AsNvdAn6An6BPwE/AT8BPwE/AT8BPwE/AT8BPwEPGvoA/S99S44nQ74fT4Ew9Y4pNPXUVVpG8Z5OidwLAt3IJBGo9HAdT3G5w0G8MhD8zA/4u/YPh6N9SAn4GcoLS7CH5zB+OQUOjsC8IcCSKVSmByfhNPpwD5vAJIkYWhwCIYRIxaLwe/3Y/v2YDyTySB54xoCgQB8Ph9M00RVZSXKSspQXOzH6K3bXQvArNf6NfD9bHw+H44eewYtLS0YfmsIXe1BhEMhZDIZXL/+PoLBVfB45mIqnYbf70dFWRnGxsYwfv0mGhrqUFVVhcHBQWxubUVRUTGeeeY4bt9uRTqdXpD57XN4SjweLzZvbkBlZSVOnTqN3p5O+Hw+SKIESUkg9t9bqC4v61oAHv2bB4mI4HK58fNnf4S77z6IqfH7uHXzA9T4fbBYLMhkUkgmk/B6vXC756KlpRWvvf4G8vkCxsduw+1ywu/349atWzCMAkzTRGdnJx5+5BG8v+99ZDKZOfX89jg8I4fDAUlKgKRhGAbGxu6itbUFSkoCAEwmExwOB/YdPIy5c+cA5As9N/M09P31XvD5fKiuqkZ/fxBnz76GfD6PZDJVpL8kSdi9uxlPPvkDDA8PwzRNeIuLMbS9HYWFAdTXVePwkWNIp9OQJAlOpxPNm7cgGAxi9549CAbXA8gWZHp7H56S1WpFPB5HNBoFMHOfv3v3LuRyBSQSKQBAnm15Vp9teZYvEol43599NPh8XmzbVofTp8+ioaEOfp8PkpRAOl1AOk2QpIQsS5IEx7HgeR4lJSXYvn0Hnn76GVitVkAqkC8UCkinCcXFJdi6tR5DQ7d7X/A7Y3C12YxVqzU4jguLREIIBEJIpdJIJBIwTROmaXLe9wD5Xf7q8z//7X7//Pz8+fM4evQI/P5m5PMFxONxyLIMnuctQpXmOE7+24LjuEIsFhOKigogCDxyuRyi0aj3Bf+NMbharZbnWZYV4nF9X5IkC5bllX0+548fP75fVVUFT0H+u/L//745OTkZ+eCDd/XfvnBaf+utt/R/+eC9xHvvvdv4+v9fTbz5xlv6K6+8or/yyit/H5048Vp4YGDAn06nM8XFhcxDDw079+49mOzt4QODb+p//vTffX/59HN+f5P+u9/+Mv+T068O//b5E8X6K6+8or/yyit/H5048Vp4YGDAn06nM8XFhcxDDw079+49mOztPRwPh8N6S8uWvHq7fK7X5Yfdbld9vvyq1tYtw4cP//bE4OCg3tfXZ7S1XcmvXFmsv2/at86fP298/fW5vFqt+YqX8+O5Wq0WDMNQpP8/7NqVy9i2bYvR3Hw+/9OfHjOam5vziwXGidU/7bW+/PLM+ZUr//j64YfvP33mzJl8vV6f1+73wYcf5I8ceSK8YcN9xSuH35z7p4N/XvjLp3/725+n0xn9P47XarXwPA/LsjLP5e9/P7bY4/FmN2++77P9+/cX4vE4crkccrksbNtGJpPR9TzPr/75w7/OnD//7jGfby4P4K6q+T6Px6P7fAVfPlfgKyoq9FWrVuXfO/3Xp89/mcvp4XC47H79H169WpXnefUv/5z475Ur744LglCxWCwsfD7bC9VqVbFtm+V5HkzTPb87D549fOTI8f37D4REUay+UvX//B6v5X4v8H3L7R66MvjXv8bjd//0h5fOnDnzWvE6v6+p/v7Fh/Yd/vE7b7/9L8dx/uR5nveXlGzR/X6/8fLLb/w4HA7rP7v34F+OnXjv79Ppe+K7v48v9pjs7O54716m5X4vCIdPnz69mE6n4bIs8u4P39tqteYffvjx8SNHjoxXVVWhvKLSFwgsy789+OapCxfeHfV4KssH7i5I/Xp9fvX1D984evLpHz7V1dU7+bNnj+8XBP7K4Z/eX93Z//M3vvnmm4Lnea4Xj8fNffveH+rpOZgMBALlxW6/dYf/rR/8OBC5ffu2fWfO/OXvAIA5AOx/eT/+4fM9+fA7b5+8fPnr4m6+m1/XN74v8XN9p/Vp+o45X/37C959fX36e++9Z/b29pru91m4//H+/rT/yqW/+eY/TzmdTiM/n5bL5bL7n+VbYf7S3wEAg8FgkPff8p5Xv/v15uZm9u+vveZ9PZ5Y8bK+BQCXy5ULBoPyXl+8W8b3+/04duzYPvnvz3/S/7P9L+/L/+L+98PzO4+XvV4vOjo60NLSvD8QCBTlV//06fO9K4C1CgA4OjqKU6feW7B5e45zBw8e7Fy9enUBePjwH5/766effvHw4YOnvvnmm2wURdF//7OfX3b5F1h8Pp/u8XiYmzdvwbZtO9/bK+P787V9F7D0DSDw9XpS/q5vAXO0fRcYp50AAM8//zxGRkYArHQAAM888wzGxsYWBOD555/HzMwMYP5FPh786+j5XWB8fGJR8+v/8r58V9wFfH35/M7j7m8C459fWND/W/gFA4G1AADAarVi48aNAICpqSnfSv4FAwHAarViamoKAGAYxvK55p8LAKanp3MAwLquL4sFAFBfXw+v14upqSls3LgxuwIAKCgo4BobGwEA4XAY7e3tw5ubm9mZmRmsXbuWb25uRjQa5ZqbmwEAqVQKwWBwXygUglgKACgtLcWmTZsAAFevXkWpP5m6H5Y+AT8BPwE/AT8BPwE/AT8BPwE/AT8B/f99BPwEPAHwEXoCPwFPAHwEHgGeAPwEPIE/4A//4SfwE/AT8BMAPgE/AT8BPwE/AT8BPwE/AT8BPwEPAPwXh5fM/4Y+GAAAAABJRU5ErkJggg==" class="logo" alt="Logo" style="width: 100px; display: block; margin: 0 auto 10px;">
+            <div style="border: 2px solid #000; display: inline-block; padding: 5px 15px; font-weight: bold; margin-bottom: 10px;">فاتورة حجز مؤقتة</div>
+            <h2 style="margin: 5px 0;">سحايب ديرتي</h2>
+            <p>رقم الفاتورة: <span id="inv">1013</span></p>
+            <hr style="border: 0; border-top: 1px solid #000;">
+        </div>
+
+        <div class="no-print" style="margin-bottom: 15px; text-align: right;">
+            <input id="cName" placeholder=" الموعد" style="width:95%; margin-bottom:5px;">
+            <input id="cPhone" placeholder="جوال العميل" style="width:95%; margin-bottom:5px;">
+            <div style="border: 1px solid #ddd; padding: 8px; border-radius: 5px;">
+                <input type="radio" name="dType" id="takeaway" checked onclick="toggleDelivery(false)"> استلام 🏠
+                <input type="radio" name="dType" id="delivery" onclick="toggleDelivery(true)"> توصيل 🚗
+                <div id="deliveryInput" style="display:none; margin-top:10px;">
+                    رسوم التوصيل: <input id="deliveryFee" type="number" value="0" onchange="updateCart()" style="width:60px">
+                    <input id="cLoc" placeholder="موقع العميل / العنوان" style="width:90%; margin-top:5px;">
+                </div>
+            </div>
+        </div>
+
+        <div id="cart"></div>
+        
+        <hr style="border: 0; border-top: 1px solid #000;">
+        <div class="line" style="font-size: 1.3em;">
+            <span>الإجمالي:</span>
+            <span class="dots"></span>
+            <span id="totalDisplay">0.00</span>
+        </div>
+
+        <div id="qrArea" style="margin-top: 20px; text-align: center; display: none;">
+            <p style="font-size: 14px; font-weight: bold;">حمل تطبيقنا الآن 📲</p>
+            <img id="appQrImg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAAAAAsS6X5KAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAA8SURBVHja7dHBDQAgDMAw/9O5XWfBCFq7869XQZ8P8P8AAAAAAAAAAAAAgHIAAAAAAAAAAAAAAAA4WggKAtv4mX08AAAAAElFT_SuQmCC" style="width:120px; display: block; margin: 0 auto;" alt="App QR Code">
+        </div>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <p style="font-size: 12px; font-weight: bold;">شكراً لزيارتكم 💙</p>
+            <p style="font-size: 10px; color: #7f8c8d;">النظام يعمل كنسخة احتياطية (أوفلاين)</p>
+        </div>
+
+        <div class="no-print" style="margin-top:20px; display: flex; justify-content: center; gap: 8px;">
+            <button onclick="printInvoice()" style="background:#2c3e50; color:#fff; padding:12px; border-radius:5px; flex:1; cursor:pointer;">🖨️ طباعة</button>
+            <button onclick="sendWhats()" style="background:#27ae60; color:#fff; padding:12px; border-radius:5px; flex:1; cursor:pointer;">📲 واتساب (يحتاج نت)</button>
+            <button onclick="clearCart()" style="background:#95a5a6; color:#fff; padding:12px; border-radius:5px; cursor:pointer;">🗑️ جديد</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// البيانات الافتراضية للمنيو (تعمل كاحتياط في حال لم يكن هناك بيانات مخزنة)
+const defaultData = [
+    {name: "المشروبات", items: [{name: "شاي", price: 2}, {name: "قهوة عربية", price: 5}]},
+    {name: "المأكولات", items: [{name: "تمر فاخر", price: 10}, {name: "كعك ديرتي", price: 15}]}
+];
+
+// تحميل البيانات من التخزين المحلي أو استخدام الافتراضية
+let data = JSON.parse(localStorage.getItem("menu")) || defaultData;
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let inv = parseInt(localStorage.getItem("inv")) || 1013;
+let activeCat = 0;
+
+function save(){ localStorage.setItem("menu", JSON.stringify(data)); }
+function saveCart(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+
+function render(){
+    document.getElementById("inv").innerText = inv;
+    let catsDiv = document.getElementById("cats");
+    let select = document.getElementById("catSelect");
+    catsDiv.innerHTML = ""; select.innerHTML = "";
+    
+    // التأكد من وجود بيانات
+    if (data.length === 0) {
+        catsDiv.innerHTML = "<p style='color:red;'>القائمة فارغة، أضف أقساماً أصنافاً.</p>";
+        return;
+    }
+
+    data.forEach((c, i) => {
+        catsDiv.innerHTML += `<div class="cat-container"><div class="cat ${i===activeCat?'active':''}" onclick="activeCat=${i};render()">${c.name}</div><button class="edit-btn" onclick="editCat(${i})">📝</button></div>`;
+        select.innerHTML += `<option value="${i}">${c.name}</option>`;
+    });
+    
+    showItems();
+    updateCart();
+}
+
+function showItems(){
+    let div = document.getElementById("items"); div.innerHTML = "";
+    if(!data[activeCat] || !data[activeCat].items) return;
+    
+    data[activeCat].items.forEach((it, idx) => {
+        div.innerHTML += `<div class="item-container">
+    <div class="item" onclick="addCart('${it.name}', ${it.price})">${it.name}<br>${it.price} ر.س</div>
+    <button class="edit-btn" onclick="editItem(${activeCat}, ${idx})">📝</button>
+    <button class="delete-btn" onclick="deleteItemFromMenu(${idx})" style="background: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 5px; padding: 5px; margin-right: 5px;">🗑️</button>
+</div>`;
+    });
+}
+
+function addCart(name, price){
+    cart.push({name, price, qty: 1, note: ""});
+    saveCart(); updateCart();
+}
+
+function changeQty(i, delta) {
+    if (!cart[i]) return;
+    cart[i].qty += delta;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+    saveCart(); updateCart();
+}
+
+function updateCart(){
+    let div = document.getElementById("cart"); div.innerHTML = "";
+    let total = 0;
+    
+    cart.forEach((it, idx) => {
+        total += it.price * it.qty;
+        div.innerHTML += `
+            <div class="line">
+                <span class="no-print"><button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button></span>
+                <span>${it.name} x${it.qty}</span>
+                <span class="no-print"><button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button></span>
+                <span class="dots"></span>
+                <span>${(it.price*it.qty).toFixed(2)}</span>
+            </div>
+            ${it.note ? `<div class="note-line">📝 ${it.note}</div>` : ''}
+            <div class="no-print" style="margin-bottom:10px; text-align:center;">
+                <button onclick="addNote(${idx})" style="font-size:11px; cursor:pointer;">📝 ملاحظة</button>
+                <button onclick="removeItem(${idx})" style="font-size:11px; background:#e74c3c; color:white; cursor:pointer;">❌ حذف</button>
+            </div>`;
+    });
+    
+    if(document.getElementById("delivery").checked) {
+        total += parseFloat(document.getElementById("deliveryFee").value) || 0;
+    }
+    document.getElementById("totalDisplay").innerText = total.toFixed(2);
+}
+
+function editCat(i){ 
+    let n = prompt("الاسم الجديد للقسم:", data[i].name); 
+    if(n){ data[i].name = n; save(); render(); }
+}
+
+function editItem(c, i){ 
+    let it = data[c].items[i];
+    let n = prompt("الاسم الجديد:", it.name); 
+    let p = prompt("السعر الجديد:", it.price);
+    if(n && p){ 
+        data[c].items[i] = {name:n, price:parseFloat(p)}; 
+        save(); render(); 
+    }
+}
+
+function addNote(i){ 
+    let n = prompt("أدخل ملاحظة لهذا الصنف:", cart[i].note); 
+    if(n!==null) cart[i].note=n; 
+    saveCart(); updateCart(); 
+}
+
+function removeItem(i){ 
+    cart.splice(i,1); 
+    saveCart(); updateCart(); 
+}
+
+function toggleDelivery(s){ 
+    document.getElementById("deliveryInput").style.display = s?"block":"none"; 
+    updateCart(); 
+}
+
+function clearCart(){ 
+    if(confirm("بدء فاتورة جديدة؟")){ 
+        cart=[]; saveCart(); 
+        document.getElementById("cName").value = "";
+        document.getElementById("cPhone").value = "";
+        document.getElementById("takeaway").checked = true;
+        toggleDelivery(false);
+        updateCart(); 
+    }
+}
+
+function sendWhats(){
+    let phone = document.getElementById("cPhone").value.trim();
+    if(!phone) return alert("يرجى إدخال جوال العميل!");
+    if(phone.startsWith("0")) phone = phone.substring(1);
+    
+    let msg = `*🧾 فاتورة حجز من مطعم سحايب ديرتي* 🧾%0A`;
+    msg += `*رقم الفاتورة:* ${document.getElementById("inv").innerText}%0A`;
+    msg += `------------------------------------------%0A`;
+    
+    cart.forEach(it => {
+        let itemTotal = (it.price * it.qty).toFixed(2);
+        msg += `• *${it.name}*%0A`;
+        msg += `  الكمية: ${it.qty} × ${it.price} = *${itemTotal} ريال*%0A`;
+        if (it.note) msg += `  📝 ملاحظة: ${it.note}%0A`;
+    });
+    
+    msg += `------------------------------------------%0A`;
+    
+    let isDelivery = document.getElementById("delivery").checked;
+    if(isDelivery) {
+        msg += `*🚗 رسوم التوصيل:* ${document.getElementById("deliveryFee").value} ريال%0A`;
+    }
+    msg += `*💰 الإجمالي النهائي:* *${document.getElementById("totalDisplay").innerText} ريال*%0A`;
+    msg += `------------------------------------------%0A`;
+    
+    msg += `*👤 العميل:* ${document.getElementById("cName").value || "غير مسجل"}%0A`;
+    if(isDelivery) {
+        msg += `*📍 الموقع:* ${document.getElementById("cLoc").value || "غير محدد"}%0A`;
+    }
+    
+    msg += `%0A*شكراً لتعاملكم معنا!* 💙%0A`;
+    
+    // ملاحظة: رابط الواتساب سيفتح تطبيق الواتساب، وهذا يحتاج لاتصال إنترنت على الجهاز
+    window.open(`https://wa.me/966${phone}?text=${msg}`);
+}
+
+function printInvoice(){ 
+    // التأكد من ظهور منطقة الباركود قبل الطباعة
+    document.getElementById("qrArea").style.display = "block";
+    window.print(); 
+    // إعادة إخفائها بعد الطباعة لكي لا تأخذ مساحة على الشاشة
+    document.getElementById("qrArea").style.display = "none";
+    inv++; 
+    localStorage.setItem("inv", inv); 
+    render(); 
+}
+
+function addCat(){ 
+    let n = document.getElementById("catName").value; 
+    if(n){ 
+        data.push({name:n, items:[]}); 
+        save(); render(); 
+        document.getElementById("catName").value=""; 
+    }
+}
+
+function addItem(){ 
+    let c = document.getElementById("catSelect").value;
+    let n = document.getElementById("itemName").value;
+    let p = document.getElementById("itemPrice").value; 
+    if(n && p){ 
+        data[c].items.push({name:n, price:parseFloat(p)}); 
+        save(); render(); 
+        document.getElementById("itemName").value=""; 
+        document.getElementById("itemPrice").value=""; 
+    }
+}
+
+function deleteItemFromMenu(index) {
+    if (confirm("هل أنت متأكد من حذف هذا الصنف نهائياً؟")) {
+        data[activeCat].items.splice(index, 1);
+        save();
+        render();
+    }
+}
+
+// بدء التشغيل
+render();
+</script>
+</body>
+</html>
