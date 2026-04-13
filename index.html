@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سحايب ديرتي POS - الإصدار النهائي</title>
+
+<style>
+/* تنسيق الشاشة والإدارة */
+body { font-family: 'Arial', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; direction: rtl; }
+.container { display: flex; gap: 15px; flex-wrap: wrap; }
+.panel { background: #fff; padding: 20px; border-radius: 12px; flex: 1; min-width: 320px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+/* الأقسام والأصناف */
+.cat-container, .item-container { display: inline-flex; align-items: center; margin: 5px; background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.cat, .item { padding: 10px; cursor: pointer; text-align: center; }
+.cat { background: #2c3e50; color: #fff; min-width: 80px; }
+.item { width: 100px; font-size: 13px; }
+.edit-btn { background: #f39c12; color: white; border: none; padding: 10px 5px; cursor: pointer; }
+.active { background: #e67e22 !important; }
+
+/* السلة والأزرار */
+.line { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 5px 0; font-weight: bold; }
+.dots { flex-grow: 0; border-bottom: 2px dotted #000; width: 25px; height: 12px; }
+.qty-btn { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-weight: bold; margin: 0 5px; }
+.note-line { font-size: 12px; color: #d35400; text-align: center; margin-bottom: 8px; font-weight: bold; }
+
+/* إعدادات الطباعة 80mm */
+@media print {
+    @page { size: 80mm auto; margin: 0; }
+    .no-print { display: none !important; }
+    body { background: white; margin: 0; padding: 0; width: 80mm; color: #000; }
+    #printArea { width: 74mm !important; margin: 0 auto !important; padding: 5px !important; text-align: center !important; }
+    .logo { width: 110px !important; margin: 0 auto 10px !important; display: block !important; }
+    .line { justify-content: center !important; font-size: 14px !important; gap: 5px !important; }
+    .dots { display: inline-block !important; border-bottom: 1px dotted #000 !important; width: 25px !important; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="panel no-print">
+        <h3>📂 إدارة القائمة</h3>
+        <div id="cats"></div>
+        <hr>
+        <div id="items"></div>
+        <hr>
+        <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
+            <h4>إضافة وإدارة</h4>
+            <input id="catName" placeholder="قسم جديد"> <button onclick="addCat()">➕ قسم</button>
+            <br><br>
+            <select id="catSelect"></select>
+            <input id="itemName" placeholder="صنف"> <input id="itemPrice" type="number" placeholder="سعر" style="width:60px">
+            <button onclick="addItem()">➕ صنف</button>
+        </div>
+    </div>
+
+    <div class="panel" id="printArea">
+        <div class="center-header">
+            <img src="https://deerty666.github.io/logo.png" class="logo" alt="Logo" style="width: 100px; display: block; margin: 0 auto 10px;">
+            <div style="border: 2px solid #000; display: inline-block; padding: 5px 15px; font-weight: bold; margin-bottom: 10px;">فاتورة حجز مؤقتة</div>
+            <h2 style="margin: 5px 0;">سحايب ديرتي</h2>
+            <p>رقم الفاتورة: <span id="inv">1013</span></p>
+            <hr style="border: 0; border-top: 1px solid #000;">
+        </div>
+
+        <div class="no-print" style="margin-bottom: 15px; text-align: right;">
+            <input id="cName" placeholder=" الموعد" style="width:95%; margin-bottom:5px;">
+            <input id="cPhone" placeholder="جوال العميل" style="width:95%; margin-bottom:5px;">
+            <div style="border: 1px solid #ddd; padding: 8px; border-radius: 5px;">
+                <input type="radio" name="dType" id="takeaway" checked onclick="toggleDelivery(false)"> استلام 🏠
+                <input type="radio" name="dType" id="delivery" onclick="toggleDelivery(true)"> توصيل 🚗
+                <div id="deliveryInput" style="display:none; margin-top:10px;">
+                    رسوم التوصيل: <input id="deliveryFee" type="number" value="0" onchange="updateCart()" style="width:60px">
+                    <input id="cLoc" placeholder="موقع العميل / العنوان" style="width:90%; margin-top:5px;">
+                </div>
+            </div>
+        </div>
+
+        <div id="cart"></div>
+        
+        <hr style="border: 0; border-top: 1px solid #000;">
+        <div class="line" style="font-size: 1.3em;">
+            <span>الإجمالي:</span>
+            <span class="dots"></span>
+            <span id="totalDisplay">0.00</span>
+        </div>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <p style="font-size: 14px; font-weight: bold;">لمتابعة العروض حمل تطبيقنا 📲</p>
+            <img src="https://deerty666.github.io/qr.png" style="width:120px; display: block; margin: 0 auto;">
+            <p style="font-size: 12px; font-weight: bold;">شكراً لزيارتكم 💙</p>
+        </div>
+
+        <div class="no-print" style="margin-top:20px; display: flex; justify-content: center; gap: 8px;">
+            <button onclick="printInvoice()" style="background:#2c3e50; color:#fff; padding:12px; border-radius:5px; flex:1;">🖨️ طباعة</button>
+            <button onclick="sendWhats()" style="background:#27ae60; color:#fff; padding:12px; border-radius:5px; flex:1;">📲 واتساب</button>
+            <button onclick="clearCart()" style="background:#95a5a6; color:#fff; padding:12px; border-radius:5px;">🗑️ جديد</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("menu")) || [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let inv = parseInt(localStorage.getItem("inv")) || 1013;
+let activeCat = 0;
+
+// الرابط الثابت للمنيو الخاص بك 🔗
+const APP_URL = "https://deerty666.github.io/menu.html?branch=branch1";
+
+function save(){ localStorage.setItem("menu", JSON.stringify(data)); }
+function saveCart(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+
+function render(){
+    document.getElementById("inv").innerText = inv;
+    let catsDiv = document.getElementById("cats");
+    let select = document.getElementById("catSelect");
+    catsDiv.innerHTML = ""; select.innerHTML = "";
+    data.forEach((c, i) => {
+        catsDiv.innerHTML += `<div class="cat-container"><div class="cat ${i===activeCat?'active':''}" onclick="activeCat=${i};render()">${c.name}</div><button class="edit-btn" onclick="editCat(${i})">📝</button></div>`;
+        select.innerHTML += `<option value="${i}">${c.name}</option>`;
+    });
+    showItems();
+    updateCart();
+}
+
+function showItems(){
+    let div = document.getElementById("items"); div.innerHTML = "";
+    if(!data[activeCat]) return;
+    data[activeCat].items.forEach((it, idx) => {
+        div.innerHTML += `<div class="item-container">
+            <div class="item" onclick="addCart('${it.name}', ${it.price})">${it.name}<br>${it.price} ر.س</div>
+            <button class="edit-btn" onclick="editItem(${activeCat}, ${idx})">📝</button>
+            <button class="delete-btn" onclick="deleteItemFromMenu(${idx})" style="background: #e74c3c; border: none; color:white; padding:5px; cursor: pointer; border-radius: 5px; margin-right: 5px;">🗑️</button>
+        </div>`;
+    });
+}
+
+function addCart(name, price){
+    cart.push({name, price, qty: 1, note: ""});
+    saveCart(); updateCart();
+}
+
+function changeQty(i, delta) {
+    cart[i].qty += delta;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+    saveCart(); updateCart();
+}
+
+function updateCart(){
+    let div = document.getElementById("cart"); div.innerHTML = "";
+    let total = 0;
+    cart.forEach((it, idx) => {
+        total += it.price * it.qty;
+        div.innerHTML += `
+            <div class="line">
+                <span class="no-print"><button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button></span>
+                <span>${it.name} x${it.qty}</span>
+                <span class="no-print"><button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button></span>
+                <span class="dots"></span>
+                <span>${(it.price*it.qty).toFixed(2)}</span>
+            </div>
+            ${it.note ? `<div class="note-line">📝 ${it.note}</div>` : ''}
+            <div class="no-print" style="margin-bottom:10px; text-align:center;">
+                <button onclick="addNote(${idx})" style="font-size:11px">📝 ملاحظة</button>
+                <button onclick="removeItem(${idx})" style="font-size:11px; background:#e74c3c; color:white;">❌ حذف</button>
+            </div>`;
+    });
+    if(document.getElementById("delivery").checked) total += parseFloat(document.getElementById("deliveryFee").value) || 0;
+    document.getElementById("totalDisplay").innerText = total.toFixed(2);
+}
+
+function sendWhats(){
+    let phone = document.getElementById("cPhone").value.trim();
+    if(!phone) return alert("يرجى إدخال جوال العميل!");
+    if(phone.startsWith("0")) phone = phone.substring(1);
+    
+    let msg = `*🧾 فاتورة حجز من مطعم سحايب ديرتي* 🧾%0A`;
+    msg += `*رقم الفاتورة:* ${document.getElementById("inv").innerText}%0A`;
+    msg += `------------------------------------------%0A`;
+    
+    cart.forEach(it => {
+        let itemTotal = (it.price * it.qty).toFixed(2);
+        msg += `• *${it.name}*%0A`;
+        msg += `  الكمية: ${it.qty} × ${it.price} = *${itemTotal} ريال*%0A`;
+        if (it.note) msg += `  📝 ملاحظة: ${it.note}%0A`;
+    });
+    
+    msg += `------------------------------------------%0A`;
+    
+    let isDelivery = document.getElementById("delivery").checked;
+    if(isDelivery) {
+        msg += `*🚗 رسوم التوصيل:* ${document.getElementById("deliveryFee").value} ريال%0A`;
+    }
+    msg += `*💰 الإجمالي النهائي:* *${document.getElementById("totalDisplay").innerText} ريال*%0A`;
+    msg += `------------------------------------------%0A`;
+    
+    msg += `*👤 العميل:* ${document.getElementById("cName").value || "غير مسجل"}%0A`;
+    if(isDelivery) {
+        msg += `*📍 الموقع:* ${document.getElementById("cLoc").value || "غير محدد"}%0A`;
+    }
+    
+    msg += `%0A*شكراً لتعاملكم معنا!* 💙%0A%0A`;
+    msg += `📲 *لمتابعة المنيو والعروض:*%0A${APP_URL}`;
+    
+    window.open(`https://wa.me/966${phone}?text=${msg}`);
+}
+
+function printInvoice(){ window.print(); inv++; localStorage.setItem("inv", inv); render(); }
+function addCat(){ let n = document.getElementById("catName").value; if(n){ data.push({name:n, items:[]}); save(); render(); document.getElementById("catName").value=""; }}
+function addItem(){ let c = document.getElementById("catSelect").value, n = document.getElementById("itemName").value, p = document.getElementById("itemPrice").value; if(n && p){ data[c].items.push({name:n, price:parseFloat(p)}); save(); render(); document.getElementById("itemName").value=""; document.getElementById("itemPrice").value=""; }}
+function deleteItemFromMenu(index) { if (confirm("هل أنت متأكد؟")) { data[activeCat].items.splice(index, 1); save(); render(); } }
+
+render();
+</script>
+</body>
+</html>
