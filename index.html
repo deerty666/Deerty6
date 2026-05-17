@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كاشير السواقين</title>
+
+<style>
+*{
+box-sizing:border-box;
+font-family:Arial,Tahoma,sans-serif;
+}
+
+body{
+margin:0;
+background:#f3f4f6;
+color:#111827;
+}
+
+.topbar{
+background:#111827;
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+
+.topbar h1{
+margin:0;
+font-size:24px;
+}
+
+.layout{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+padding:15px;
+}
+
+.menu-section,
+.invoice-section{
+background:white;
+border-radius:16px;
+padding:15px;
+box-shadow:0 4px 14px rgba(0,0,0,.06);
+}
+
+.category-box{
+margin-bottom:12px;
+border:1px solid #e5e7eb;
+border-radius:14px;
+overflow:hidden;
+}
+
+.category-header{
+background:#1f2937;
+color:white;
+padding:14px;
+cursor:pointer;
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-weight:bold;
+}
+
+.items-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+padding:10px;
+}
+
+.item-card{
+color:white;
+padding:20px 10px;
+border-radius:14px;
+text-align:center;
+cursor:pointer;
+font-weight:bold;
+box-shadow:0 4px 10px rgba(0,0,0,.15);
+transition:.2s;
+}
+
+.item-card:hover{
+transform:scale(1.02);
+}
+
+.item-price{
+margin-top:8px;
+font-size:14px;
+opacity:.95;
+}
+
+#cart{
+min-height:130px;
+border:1px dashed #cbd5e1;
+border-radius:14px;
+padding:10px;
+margin-top:15px;
+background:#f8fafc;
+}
+
+.cart-item{
+background:white;
+border:1px solid #e5e7eb;
+border-radius:12px;
+padding:10px;
+margin-bottom:10px;
+}
+
+.cart-item input{
+width:100%;
+margin-top:8px;
+padding:10px;
+border-radius:9px;
+border:1px solid #d1d5db;
+}
+
+.qty-row{
+display:flex;
+gap:6px;
+margin-top:8px;
+}
+
+button{
+border:none;
+padding:10px 14px;
+border-radius:10px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+opacity:.9;
+}
+
+.danger-btn{
+background:#dc2626;
+}
+
+.whatsapp-btn{
+background:#16a34a;
+}
+
+.total-box{
+background:#111827;
+color:white;
+padding:16px;
+border-radius:14px;
+margin:15px 0;
+text-align:center;
+font-size:24px;
+font-weight:bold;
+}
+
+.actions{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+}
+
+select,
+input{
+width:100%;
+padding:12px;
+border-radius:10px;
+border:1px solid #d1d5db;
+margin-bottom:10px;
+font-size:15px;
+}
+
+.invoice-card{
+background:#f9fafb;
+border:1px solid #e5e7eb;
+border-radius:14px;
+padding:12px;
+margin-top:10px;
+}
+
+.invoice-actions{
+display:flex;
+gap:6px;
+flex-wrap:wrap;
+margin-top:10px;
+}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.6);
+padding:15px;
+z-index:999;
+}
+
+.modal-content{
+background:white;
+max-width:850px;
+margin:auto;
+padding:15px;
+border-radius:16px;
+max-height:90vh;
+overflow:auto;
+}
+
+.admin-card{
+background:#f9fafb;
+padding:12px;
+border-radius:12px;
+margin-bottom:12px;
+}
+
+.admin-row{
+background:white;
+border:1px solid #e5e7eb;
+padding:10px;
+border-radius:10px;
+margin-bottom:8px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+}
+
+@media(max-width:800px){
+
+.layout{
+grid-template-columns:1fr;
+}
+
+.actions{
+grid-template-columns:1fr 1fr;
+}
+
+.topbar{
+flex-direction:column;
+align-items:stretch;
+}
+
+.items-grid{
+grid-template-columns:1fr 1fr;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+<h1>كاشير السواقين</h1>
+
+<div>
+<button onclick="openAdminModal()">إدارة الأصناف</button>
+
+<button onclick="deleteAllInvoices()" class="danger-btn">
+حذف فواتير آخر الليل
+</button>
+</div>
+</header>
+
+<div class="layout">
+
+<section class="menu-section">
+
+<h2>الأصناف</h2>
+
+<div id="menuContainer"></div>
+
+</section>
+
+<section class="invoice-section">
+
+<select id="driverSelect"></select>
+
+<div id="cart"></div>
+
+<div class="total-box">
+<span id="grandTotal">0.00 ر.س</span>
+</div>
+
+<div class="actions">
+
+<button onclick="saveDriverInvoice()">حفظ</button>
+
+<button onclick="printCurrentReceipt()">طباعة</button>
+
+<button onclick="sendCurrentWhatsApp()" class="whatsapp-btn">
+واتساب
+</button>
+
+<button onclick="clearCart()">
+مسح
+</button>
+
+</div>
+
+<hr>
+
+<h2>الفواتير المحفوظة</h2>
+
+<select id="filterDriver" onchange="renderSavedInvoices()">
+<option value="">كل السواقين</option>
+</select>
+
+<div id="savedInvoicesList"></div>
+
+</section>
+
+</div>
+
+<div id="adminModal" class="modal">
+
+<div class="modal-content">
+
+<h2>إدارة الأصناف</h2>
+
+<div class="admin-card">
+
+<h3>إضافة قسم</h3>
+
+<input id="newCatName" placeholder="اسم القسم">
+
+<button onclick="addCategory()">
+إضافة القسم
+</button>
+
+</div>
+
+<div class="admin-card">
+
+<h3>إضافة صنف</h3>
+
+<select id="adminCatSelect"></select>
+
+<input id="newItemNameAdmin" placeholder="اسم الصنف">
+
+<input
+id="newItemPriceAdmin"
+type="number"
+step="0.01"
+placeholder="السعر"
+>
+
+<button onclick="addItemFromAdmin()">
+إضافة الصنف
+</button>
+
+</div>
+
+<div class="admin-card">
+
+<h3>الأقسام والأصناف</h3>
+
+<div id="adminCategoriesList"></div>
+
+</div>
+
+<button onclick="closeAdminModal()" class="danger-btn">
+إغلاق
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let menu = JSON.parse(localStorage.getItem('menu')) || {
+
+categories:[
+"وجبات رئيسية",
+"مشروبات",
+"حلويات",
+"مقبلات"
+],
+
+items:[
+
+{
+id:1,
+name:"نص شواية شعبي",
+price:23,
+category:"وجبات رئيسية"
+},
+
+{
+id:2,
+name:"حبة شواية رز بشاور",
+price:50,
+category:"وجبات رئيسية"
+},
+
+{
+id:3,
+name:"ماء",
+price:1,
+category:"مشروبات"
+},
+
+{
+id:4,
+name:"بيبسي",
+price:3,
+category:"مشروبات"
+},
+
+{
+id:5,
+name:"حلا رق",
+price:10,
+category:"حلويات"
+}
+
+]
+
+};
+
+let drivers = JSON.parse(localStorage.getItem('drivers')) || [
+
+{name:"فواد 1",phone:"966500000001"},
+{name:"الجابري 2",phone:"966500000002"},
+{name:"مروان 3",phone:"966500000003"},
+{name:"ناصر 4",phone:"966500000004"},
+{name:"لطف 5",phone:"966500000005"},
+{name:"مصلي 6",phone:"966500000006"},
+{name:"علي 7",phone:"966500000007"},
+{name:"مجاهد 8",phone:"966500000008"}
+
+];
+
+let cart = [];
+
+let savedInvoices =
+JSON.parse(localStorage.getItem('driverInvoices')) || [];
+
+let editingInvoiceId = null;
+
+let openCategory = null;
+
+function saveMenu(){
+
+localStorage.setItem(
+'menu',
+JSON.stringify(menu)
+);
+
+}
+
+function saveInvoices(){
+
+localStorage.setItem(
+'driverInvoices',
+JSON.stringify(savedInvoices)
+);
+
+}
+
+function money(n){
+
+return Number(n || 0).toFixed(2);
+
+}
+
+function getDriverByName(name){
+
+return drivers.find(d => d.name === name)
+|| {name:name,phone:""};
+
+}
+
+function renderDrivers(){
+
+const select =
+document.getElementById('driverSelect');
+
+const filter =
+document.getElementById('filterDriver');
+
+select.innerHTML =
+'<option value="">اختر السواق</option>';
+
+filter.innerHTML =
+'<option value="">كل السواقين</option>';
+
+drivers.forEach(driver=>{
+
+let opt1 = document.createElement('option');
+
+opt1.value = driver.name;
+
+opt1.textContent = driver.name;
+
+select.appendChild(opt1);
+
+let opt2 = document.createElement('option');
+
+opt2.value = driver.name;
+
+opt2.textContent = driver.name;
+
+filter.appendChild(opt2);
+
+});
+
+}
+
+function getColor(index){
+
+const colors = [
+
+'#ef4444',
+'#0ea5e9',
+'#22c55e',
+'#f59e0b',
+'#8b5cf6',
+'#14b8a6',
+'#d946ef'
+
+];
+
+return colors[index % colors.length];
+
+}
+
+function toggleCategory(cat){
+
+openCategory =
+openCategory === cat ? null : cat;
+
+renderMenu();
+
+}
+
+function renderMenu(){
+
+const container =
+document.getElementById('menuContainer');
+
+container.innerHTML = '';
+
+menu.categories.forEach((cat,index)=>{
+
+const isOpen = openCategory === cat;
+
+const box = document.createElement('div');
+
+box.className = 'category-box';
+
+const header = document.createElement('div');
+
+header.className = 'category-header';
+
+header.innerHTML = `
+<strong>${cat}</strong>
+<span>${isOpen ? '▲' : '▼'}</span>
+`;
+
+header.onclick = function(){
+
+toggleCategory(cat);
+
+};
+
+box.appendChild(header);
+
+const items = document.createElement('div');
+
+items.className = 'items-grid';
+
+items.style.display =
+isOpen ? 'grid' : 'none';
+
+menu.items
+.filter(i => i.category === cat)
+.forEach(item=>{
+
+const card = document.createElement('div');
+
+card.className = 'item-card';
+
+card.style.background = getColor(index);
+
+card.innerHTML = `
+<div>${item.name}</div>
+<div class="item-price">
+${money(item.price)} ر.س
+</div>
+`;
+
+card.onclick = function(){
+
+addToCart(item);
+
+};
+
+items.appendChild(card);
+
+});
+
+box.appendChild(items);
+
+container.appendChild(box);
+
+});
+
+}
+
+function addToCart(item){
+
+const existing =
+cart.find(i => i.id === item.id);
+
+if(existing){
+
+existing.qty += 1;
+
+}else{
+
+cart.push({
+...item,
+qty:1,
+note:''
+});
+
+}
+
+renderCart();
+
+}
+
+function renderCart(){
+
+const box =
+document.getElementById('cart');
+
+box.innerHTML = '';
+
+if(cart.length === 0){
+
+box.innerHTML =
+'<p style="text-align:center;">لا توجد أصناف</p>';
+
+}
+
+cart.forEach((item,index)=>{
+
+const total = item.price * item.qty;
+
+const div = document.createElement('div');
+
+div.className = 'cart-item';
+
+div.innerHTML = `
+
+<strong>${item.name}</strong>
+
+<br>
+
+${item.qty} × ${money(item.price)}
+= ${money(total)} ر.س
+
+<input
+type="text"
+placeholder="ملاحظة"
+value="${item.note}"
+onchange="cart[${index}].note=this.value"
+>
+
+<div class="qty-row">
+
+<button onclick="changeQty(${index},1)">
++
+</button>
+
+<button onclick="changeQty(${index},-1)">
+-
+</button>
+
+<button
+onclick="removeItem(${index})"
+class="danger-btn"
+>
+حذف
+</button>
+
+</div>
+`;
+
+box.appendChild(div);
+
+});
+
+updateTotal();
+
+}
+
+function changeQty(index,delta){
+
+cart[index].qty += delta;
+
+if(cart[index].qty < 1){
+
+cart.splice(index,1);
+
+}
+
+renderCart();
+
+}
+
+function removeItem(index){
+
+cart.splice(index,1);
+
+renderCart();
+
+}
+
+function updateTotal(){
+
+const total = cart.reduce(
+(sum,item)=>
+sum + item.price * item.qty,
+0
+);
+
+document.getElementById('grandTotal')
+.textContent =
+money(total) + ' ر.س';
+
+}
+
+function clearCart(){
+
+if(confirm('مسح الفاتورة؟')){
+
+cart = [];
+
+editingInvoiceId = null;
+
+renderCart();
+
+}
+
+}
+
+function makeCurrentInvoice(){
+
+const driver =
+document.getElementById('driverSelect').value;
+
+return {
+
+id: editingInvoiceId || Date.now(),
+
+driver,
+
+date:new Date().toLocaleString('ar-SA'),
+
+items:JSON.parse(JSON.stringify(cart)),
+
+total:cart.reduce(
+(s,i)=>s+i.price*i.qty,
+0
+)
+
+};
+
+}
+
+function saveDriverInvoice(){
+
+const driver =
+document.getElementById('driverSelect').value;
+
+if(!driver)
+return alert('اختر السواق');
+
+if(cart.length === 0)
+return alert('الفاتورة فاضية');
+
+const invoice = makeCurrentInvoice();
+
+if(editingInvoiceId){
+
+const index =
+savedInvoices.findIndex(
+i => i.id === editingInvoiceId
+);
+
+savedInvoices[index] = invoice;
+
+editingInvoiceId = null;
+
+alert('تم تعديل الفاتورة');
+
+}else{
+
+savedInvoices.push(invoice);
+
+alert('تم حفظ الفاتورة');
+
+}
+
+saveInvoices();
+
+cart = [];
+
+renderCart();
+
+renderSavedInvoices();
+
+}
+
+function renderSavedInvoices(){
+
+const box =
+document.getElementById('savedInvoicesList');
+
+const filter =
+document.getElementById('filterDriver').value;
+
+box.innerHTML = '';
+
+let list = savedInvoices.slice().reverse();
+
+if(filter){
+
+list = list.filter(
+i => i.driver === filter
+);
+
+}
+
+list.forEach(invoice=>{
+
+const div = document.createElement('div');
+
+div.className = 'invoice-card';
+
+let items = '';
+
+invoice.items.forEach(item=>{
+
+items += `
+${item.name}
+× ${item.qty}
+× ${money(item.price)}
+= ${money(item.price * item.qty)} ر.س
+<br>
+`;
+
+});
+
+div.innerHTML = `
+
+<strong>${invoice.driver}</strong>
+
+<br>
+
+<small>${invoice.date}</small>
+
+<br><br>
+
+<strong>
+الإجمالي:
+${money(invoice.total)} ر.س
+</strong>
+
+<div style="margin-top:10px;">
+${items}
+</div>
+
+<div class="invoice-actions">
+
+<button onclick="editSavedInvoice(${invoice.id})">
+تعديل
+</button>
+
+<button onclick="printSavedInvoice(${invoice.id})">
+طباعة
+</button>
+
+<button
+onclick="sendSavedWhatsApp(${invoice.id})"
+class="whatsapp-btn"
+>
+واتساب
+</button>
+
+<button
+onclick="deleteSavedInvoice(${invoice.id})"
+class="danger-btn"
+>
+حذف
+</button>
+
+</div>
+`;
+
+box.appendChild(div);
+
+});
+
+}
+
+function editSavedInvoice(id){
+
+const invoice =
+savedInvoices.find(i => i.id === id);
+
+cart =
+JSON.parse(JSON.stringify(invoice.items));
+
+editingInvoiceId = id;
+
+document.getElementById('driverSelect').value =
+invoice.driver;
+
+renderCart();
+
+window.scrollTo({
+top:0,
+behavior:'smooth'
+});
+
+}
+
+function deleteSavedInvoice(id){
+
+if(!confirm('حذف الفاتورة؟'))
+return;
+
+savedInvoices =
+savedInvoices.filter(i => i.id !== id);
+
+saveInvoices();
+
+renderSavedInvoices();
+
+}
+
+function deleteAllInvoices(){
+
+if(!confirm('حذف جميع الفواتير؟'))
+return;
+
+savedInvoices = [];
+
+saveInvoices();
+
+renderSavedInvoices();
+
+}
+
+function buildReceipt(invoice){
+
+const driverInfo =
+getDriverByName(invoice.driver);
+
+let html = `
+
+<div style="
+width:76mm;
+min-height:130mm;
+margin:0 auto;
+padding:4mm;
+font-family:Arial,Tahoma,sans-serif;
+direction:rtl;
+background:#fff;
+color:#000;
+font-size:11px;
+line-height:1.6;
+">
+
+<div style="text-align:center;">
+
+<img
+src="logo.png"
+style="
+width:75px;
+height:auto;
+margin-bottom:5px;
+"
+onerror="this.style.display='none'"
+>
+
+<div style="
+font-size:21px;
+font-weight:900;
+margin-bottom:2px;
+">
+سحايب ديرتي
+</div>
+
+<div style="
+font-size:10px;
+margin-bottom:8px;
+">
+ديرتي للمطاعم والمناسبات
+</div>
+
+<div style="
+background:#000;
+color:#fff;
+padding:8px;
+font-weight:bold;
+font-size:13px;
+border-radius:3px;
+margin-bottom:10px;
+">
+فاتورة خاصة بوجبات السواقين
+</div>
+
+</div>
+
+<div style="
+border:1px solid #000;
+padding:7px;
+border-radius:4px;
+margin-bottom:10px;
+line-height:1.8;
+">
+
+<div>
+<strong>السواق:</strong>
+${invoice.driver}
+</div>
+
+<div>
+<strong>الجوال:</strong>
+${driverInfo.phone || '-'}
+</div>
+
+<div>
+<strong>التاريخ:</strong>
+${invoice.date}
+</div>
+
+</div>
+
+<div style="
+border-top:2px dashed #000;
+margin:10px 0;
+">
+</div>
+
+<table style="
+width:100%;
+border-collapse:collapse;
+table-layout:fixed;
+font-size:10px;
+">
+
+<thead>
+
+<tr style="border-bottom:1px solid #000;">
+
+<th style="
+width:42%;
+padding:4px;
+text-align:right;
+">
+الصنف
+</th>
+
+<th style="
+width:16%;
+padding:4px;
+">
+الكمية
+</th>
+
+<th style="
+width:18%;
+padding:4px;
+">
+السعر
+</th>
+
+<th style="
+width:24%;
+padding:4px;
+">
+الإجمالي
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+`;
+
+invoice.items.forEach(item=>{
+
+html += `
+
+<tr>
+
+<td style="
+padding:5px 2px;
+text-align:right;
+word-break:break-word;
+">
+${item.name}
+</td>
+
+<td style="
+padding:5px 2px;
+text-align:center;
+">
+${item.qty}
+</td>
+
+<td style="
+padding:5px 2px;
+text-align:center;
+">
+${money(item.price)}
+</td>
+
+<td style="
+padding:5px 2px;
+text-align:center;
+">
+${money(item.price * item.qty)}
+</td>
+
+</tr>
+`;
+
+});
+
+html += `
+
+</tbody>
+
+</table>
+
+<div style="
+border-top:2px dashed #000;
+margin:10px 0;
+">
+</div>
+
+<div style="
+border:2px solid #000;
+padding:12px;
+text-align:center;
+font-size:20px;
+font-weight:900;
+border-radius:5px;
+background:#f3f4f6;
+">
+الإجمالي:
+${money(invoice.total)} ر.س
+</div>
+
+<div style="
+text-align:center;
+margin-top:14px;
+font-size:12px;
+font-weight:bold;
+line-height:1.8;
+">
+شكراً لكم 🌹
+<br>
+نتمنى لكم يوماً سعيداً
+</div>
+
+<div style="height:20mm;"></div>
+
+</div>
+`;
+
+return html;
+
+}
+
+function printHtml(html){
+
+const printWindow =
+window.open('', '_blank', 'width=450,height=700');
+
+printWindow.document.open();
+
+printWindow.document.write(`
+
+<html dir="rtl">
+
+<head>
+
+<title>طباعة</title>
+
+<style>
+
+html,body{
+
+margin:0;
+padding:0;
+background:white;
+direction:rtl;
+font-family:Arial,Tahoma,sans-serif;
+
+}
+
+@page{
+
+size:80mm auto;
+margin:2mm;
+
+}
+
+#printArea{
+
+width:80mm;
+margin:0 auto;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="printArea">
+${html}
+</div>
+
+<script>
+
+window.onload=function(){
+
+setTimeout(function(){
+
+window.print();
+
+},300);
+
+window.onafterprint=function(){
+
+window.close();
+
+};
+
+};
+
+<\/script>
+
+</body>
+
+</html>
+
+`);
+
+printWindow.document.close();
+
+}
+
+function printSavedInvoice(id){
+
+const invoice =
+savedInvoices.find(i => i.id === id);
+
+printHtml(buildReceipt(invoice));
+
+}
+
+function printCurrentReceipt(){
+
+const driver =
+document.getElementById('driverSelect').value;
+
+if(!driver)
+return alert('اختر السواق');
+
+if(cart.length === 0)
+return alert('الفاتورة فاضية');
+
+const invoice = makeCurrentInvoice();
+
+printHtml(buildReceipt(invoice));
+
+}
+
+function buildWhatsAppMessage(invoice){
+
+let msg = `السلام عليكم 🌸\n`;
+
+msg += `فاتورة خاصة بوجبات السواقين\n`;
+
+msg += `السواق: ${invoice.driver}\n`;
+
+msg += `-------------------------\n`;
+
+invoice.items.forEach(item=>{
+
+msg += `${item.name}\n`;
+
+msg += `الكمية: ${item.qty}\n`;
+
+msg += `السعر: ${money(item.price)} ر.س\n`;
+
+msg += `الإجمالي: ${money(item.price * item.qty)} ر.س\n`;
+
+msg += `-------------------------\n`;
+
+});
+
+msg += `الإجمالي النهائي: ${money(invoice.total)} ر.س\n`;
+
+msg += `شكراً لكم`;
+
+return msg;
+
+}
+
+function sendInvoiceWhatsApp(invoice){
+
+const driver =
+getDriverByName(invoice.driver);
+
+let phone =
+(driver.phone || '').replace(/\D/g,'');
+
+if(!phone){
+
+alert('لا يوجد رقم واتساب لهذا السواق');
+
+return;
+
+}
+
+if(phone.startsWith('0')){
+
+phone = '966' + phone.substring(1);
+
+}
+
+if(!phone.startsWith('966')){
+
+phone = '966' + phone;
+
+}
+
+const message =
+encodeURIComponent(buildWhatsAppMessage(invoice));
+
+window.location.href =
+`https://wa.me/${phone}?text=${message}`;
+
+}
+
+function sendSavedWhatsApp(id){
+
+const invoice =
+savedInvoices.find(i => i.id === id);
+
+sendInvoiceWhatsApp(invoice);
+
+}
+
+function sendCurrentWhatsApp(){
+
+const driver =
+document.getElementById('driverSelect').value;
+
+if(!driver)
+return alert('اختر السواق');
+
+if(cart.length === 0)
+return alert('الفاتورة فاضية');
+
+const invoice = makeCurrentInvoice();
+
+sendInvoiceWhatsApp(invoice);
+
+}
+
+function openAdminModal(){
+
+document.getElementById('adminModal').style.display =
+'block';
+
+renderAdmin();
+
+renderAdminSelect();
+
+}
+
+function closeAdminModal(){
+
+document.getElementById('adminModal').style.display =
+'none';
+
+}
+
+function renderAdminSelect(){
+
+const select =
+document.getElementById('adminCatSelect');
+
+select.innerHTML = '';
+
+menu.categories.forEach(cat=>{
+
+let opt = document.createElement('option');
+
+opt.value = cat;
+
+opt.textContent = cat;
+
+select.appendChild(opt);
+
+});
+
+}
+
+function renderAdmin(){
+
+const box =
+document.getElementById('adminCategoriesList');
+
+box.innerHTML = '';
+
+menu.categories.forEach(cat=>{
+
+const row = document.createElement('div');
+
+row.className = 'admin-row';
+
+const title = document.createElement('strong');
+
+title.textContent = cat;
+
+const deleteBtn = document.createElement('button');
+
+deleteBtn.textContent = 'حذف القسم';
+
+deleteBtn.className = 'danger-btn';
+
+deleteBtn.onclick = function(){
+
+deleteCategory(cat);
+
+};
+
+row.appendChild(title);
+
+row.appendChild(deleteBtn);
+
+box.appendChild(row);
+
+menu.items
+.filter(i => i.category === cat)
+.forEach(item=>{
+
+const itemRow = document.createElement('div');
+
+itemRow.className = 'admin-row';
+
+const span = document.createElement('span');
+
+span.textContent =
+item.name + ' - ' +
+money(item.price) + ' ر.س';
+
+const btnBox = document.createElement('div');
+
+const editBtn = document.createElement('button');
+
+editBtn.textContent = 'تعديل';
+
+editBtn.onclick = function(){
+
+editItem(item.id);
+
+};
+
+const delBtn = document.createElement('button');
+
+delBtn.textContent = 'حذف';
+
+delBtn.className = 'danger-btn';
+
+delBtn.onclick = function(){
+
+deleteItem(item.id);
+
+};
+
+btnBox.appendChild(editBtn);
+
+btnBox.appendChild(delBtn);
+
+itemRow.appendChild(span);
+
+itemRow.appendChild(btnBox);
+
+box.appendChild(itemRow);
+
+});
+
+});
+
+}
+
+function addCategory(){
+
+const name =
+document.getElementById('newCatName')
+.value.trim();
+
+if(!name)
+return alert('اكتب اسم القسم');
+
+menu.categories.push(name);
+
+saveMenu();
+
+renderMenu();
+
+renderAdmin();
+
+renderAdminSelect();
+
+document.getElementById('newCatName').value = '';
+
+}
+
+function deleteCategory(cat){
+
+if(!confirm('حذف القسم؟'))
+return;
+
+menu.categories =
+menu.categories.filter(c => c !== cat);
+
+menu.items =
+menu.items.filter(i => i.category !== cat);
+
+saveMenu();
+
+renderMenu();
+
+renderAdmin();
+
+renderAdminSelect();
+
+}
+
+function editItem(id){
+
+const item =
+menu.items.find(i => i.id === id);
+
+const name =
+prompt('اسم الصنف', item.name);
+
+const price =
+parseFloat(prompt('السعر', item.price));
+
+if(name && !isNaN(price)){
+
+item.name = name;
+
+item.price = price;
+
+saveMenu();
+
+renderMenu();
+
+renderAdmin();
+
+}
+
+}
+
+function deleteItem(id){
+
+if(!confirm('حذف الصنف؟'))
+return;
+
+menu.items =
+menu.items.filter(i => i.id !== id);
+
+saveMenu();
+
+renderMenu();
+
+renderAdmin();
+
+}
+
+function addItemFromAdmin(){
+
+const name =
+document.getElementById('newItemNameAdmin')
+.value.trim();
+
+const price =
+parseFloat(
+document.getElementById('newItemPriceAdmin')
+.value
+);
+
+const cat =
+document.getElementById('adminCatSelect')
+.value;
+
+if(!name || isNaN(price) || !cat)
+return alert('املأ الحقول');
+
+menu.items.push({
+
+id:Date.now(),
+
+name,
+
+price,
+
+category:cat
+
+});
+
+saveMenu();
+
+renderMenu();
+
+renderAdmin();
+
+document.getElementById('newItemNameAdmin').value = '';
+
+document.getElementById('newItemPriceAdmin').value = '';
+
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+
+renderDrivers();
+
+renderMenu();
+
+renderCart();
+
+renderSavedInvoices();
+
+});
+
+</script>
+
+</body>
+</html>
