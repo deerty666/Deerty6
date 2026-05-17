@@ -748,82 +748,111 @@ return html;
 }
 
 function printHtml(html){
-const printWindow = window.open('', '_blank', 'width=430,height=750');
+
+const printWindow =
+window.open('', '_blank', 'width=430,height=750');
 
 printWindow.document.open();
 
 printWindow.document.write(`
+
 <html lang="ar" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>طباعة الفاتورة</title>
 
 <style>
-html,body{
+
+html,
+body{
+
 margin:0;
 padding:0;
 background:#fff;
 direction:rtl;
 font-family:Arial,Tahoma,sans-serif;
 color:#000;
+overflow:hidden;
+
 }
 
 @page{
-size:80mm auto;
-margin:1.5mm;
+
+size:72mm auto;
+margin:0;
+
 }
 
 #printArea{
-width:80mm;
-margin:0 auto;
+
+width:72mm;
+margin:0;
 padding:0;
 background:#fff;
+overflow:hidden;
+
 }
 
 .receipt{
-width:76mm;
+
+width:68mm;
 min-height:135mm;
-margin:0 auto;
-padding:2mm 4mm 8mm 4mm;
+margin:0;
+padding:2mm 2mm 8mm 2mm;
 background:#fff;
 color:#000;
 font-size:11px;
 line-height:1.55;
 overflow:hidden;
+
 }
 
 .receipt-top{
+
 text-align:center;
+
 }
 
 .logo{
+
 width:58px;
 height:auto;
 margin-bottom:2px;
 filter:grayscale(100%);
+
 }
 
 .brand{
+
 font-size:24px;
 font-weight:900;
 letter-spacing:.5px;
 margin-top:2px;
+
 }
 
 .brand-small{
+
 font-size:10px;
 margin-top:1px;
 font-weight:bold;
+
 }
 
 .luxury-line{
-width:52mm;
+
+width:48mm;
 height:2px;
 background:#000;
 margin:7px auto 6px auto;
+
 }
 
 .title-box{
+
 background:#000;
 color:#fff;
 padding:8px 4px;
@@ -832,175 +861,238 @@ font-weight:900;
 border-radius:3px;
 margin-bottom:8px;
 letter-spacing:.2px;
+
 }
 
 .driver-card{
+
 border:2px solid #000;
 border-radius:5px;
 padding:6px;
 margin-top:7px;
-font-size:10.8px;
+font-size:10.5px;
+
 }
 
 .driver-card div{
+
 display:flex;
 justify-content:space-between;
 align-items:center;
 border-bottom:1px dotted #777;
 padding:3px 0;
 gap:5px;
+
 }
 
 .driver-card div:last-child{
+
 border-bottom:none;
+
 }
 
 .driver-card span{
+
 font-weight:bold;
+
 }
 
 .driver-card strong{
+
 font-size:11px;
-text-align:left;
-direction:rtl;
+
 }
 
 .separator{
+
 border-top:2px dashed #000;
 margin:9px 0;
+
 }
 
 .receipt-table{
+
 width:100%;
 border-collapse:collapse;
 table-layout:fixed;
-font-size:10.5px;
+font-size:10px;
+
 }
 
 .receipt-table th{
+
 border-top:1.5px solid #000;
 border-bottom:1.5px solid #000;
 padding:5px 1px;
 font-weight:900;
 text-align:center;
+
 }
 
 .receipt-table td{
+
 padding:6px 1px;
 text-align:center;
 vertical-align:top;
 border-bottom:1px dotted #cfcfcf;
+
 }
 
 .receipt-table .name-col{
-width:42%;
+
+width:40%;
 text-align:right;
 word-break:break-word;
+
 }
 
 .receipt-table th:nth-child(2),
 .receipt-table td:nth-child(2){
+
 width:15%;
+
 }
 
 .receipt-table th:nth-child(3),
 .receipt-table td:nth-child(3){
-width:19%;
+
+width:20%;
+
 }
 
 .receipt-table th:nth-child(4),
 .receipt-table td:nth-child(4){
-width:24%;
+
+width:25%;
+
 }
 
 .note{
-font-size:9px;
+
+font-size:8.5px;
 margin-top:2px;
+
 }
 
 .total-luxury{
+
 border:3px solid #000;
 border-radius:6px;
 overflow:hidden;
 margin-top:9px;
+
 }
 
 .total-label{
+
 background:#000;
 color:#fff;
 text-align:center;
 font-size:12px;
 font-weight:900;
 padding:5px;
+
 }
 
 .total-price{
+
 text-align:center;
-font-size:30px;
+font-size:28px;
 font-weight:900;
 padding:10px 4px;
-letter-spacing:.7px;
+letter-spacing:.5px;
+
 }
 
 .total-price span{
-font-size:20px;
+
+font-size:18px;
 font-weight:900;
+
 }
 
 .thanks{
+
 text-align:center;
 font-weight:900;
-font-size:13px;
+font-size:12px;
 margin-top:12px;
 line-height:1.7;
+
 }
 
 .thanks small{
-font-size:10.5px;
+
+font-size:10px;
 font-weight:bold;
+
 }
 
 .footer-note{
+
 text-align:center;
-font-size:9px;
+font-size:8.5px;
 margin-top:8px;
+
 }
 
 .bottom-space{
-height:18mm;
+
+height:14mm;
+
 }
 
 @media print{
+
 body{
+
 -webkit-print-color-adjust:exact;
 print-color-adjust:exact;
+
 }
+
 }
+
 </style>
+
 </head>
 
 <body>
+
 <div id="printArea">
+
 ${html}
+
 </div>
 
 <script>
+
 window.onload = function(){
+
 setTimeout(function(){
+
 window.print();
+
 },300);
 
 window.onafterprint = function(){
+
 window.close();
+
 };
+
 };
+
 <\/script>
 
 </body>
+
 </html>
+
 `);
 
 printWindow.document.close();
+
 }
 
 function printSavedInvoice(id){
