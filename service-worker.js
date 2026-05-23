@@ -1,4 +1,4 @@
-const CACHE_NAME = "deerty-drivers-v8";
+const CACHE_NAME = "deerty-drivers-v10";
 const FILES = ["./","./index.html","./style.css","./app.js","./manifest.json","./icon-192.png","./icon-512.png"];
 
 self.addEventListener("install", e => {
