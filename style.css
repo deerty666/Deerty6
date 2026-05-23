@@ -44,3 +44,17 @@ tfoot td{background:#f1e3cd;font-weight:900;color:#1A1512}
   input{border:0;padding:0;font-size:11px;background:transparent}
   .note{display:none}
 }
+.positive{
+  color:#166534;
+  font-weight:900;
+}
+
+.negative{
+  color:#b91c1c;
+  font-weight:900;
+}
+
+.netLabel{
+  font-size:11px;
+  margin-top:4px;
+}
