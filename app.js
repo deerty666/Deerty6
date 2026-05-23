@@ -172,7 +172,8 @@ function render(){
         >
       </td>
 
-      <td class="netCell ${net >= 0 ? 'positive' : 'negative'}">
+      <td class="netCell ${net >= 0 ? 'positive' : 'negative'}" style="color: ${net >= 0 ? '#166534' : '#b91c1c'}; background-color: ${net >= 0 ? '#ecfdf5' : '#fef2f2'};">
+
 
         ${Math.abs(net).toFixed(2)}
 
@@ -227,17 +228,23 @@ function updateField(i, field, value){
     - num(d.apartments)
     - num(d.expense);
 
-  document.querySelectorAll(".netCell")[i].className =
-    `netCell ${currentNet >= 0 ? 'positive' : 'negative'}`;
+  const netCell = document.querySelectorAll(".netCell")[i];
+if (currentNet >= 0) {
+  netCell.className = "netCell positive";
+  netCell.style.color = "#166534";
+  netCell.style.backgroundColor = "#ecfdf5";
+} else {
+  netCell.className = "netCell negative";
+  netCell.style.color = "#b91c1c";
+  netCell.style.backgroundColor = "#fef2f2";
+}
+netCell.innerHTML = `
+  ${Math.abs(currentNet).toFixed(2)}
+  <div class="netLabel">
+    ${currentNet >= 0 ? 'للسواق' : 'على السواق'}
+  </div>
+`;
 
-  document.querySelectorAll(".netCell")[i].innerHTML = `
-
-    ${Math.abs(currentNet).toFixed(2)}
-
-    <div class="netLabel">
-      ${currentNet >= 0 ? 'للسواق' : 'على السواق'}
-    </div>
-  `;
 }
 
 function addDriver(){
