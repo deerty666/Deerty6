@@ -1,4 +1,7 @@
+
 {
+  "id": "/drivers-settlement-app-v1",
+
   "name": "تصفية حساب السواقين",
   "short_name": "السواقين",
   "start_url": "/drivers/",
